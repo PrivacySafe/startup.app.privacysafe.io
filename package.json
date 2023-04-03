@@ -1,0 +1,40 @@
+{
+  "name": "privacysafe-startup-app",
+  "version": "1.0.0",
+  "description": "PrivacySafe platform startup app",
+  "author": "3NSoft, Inc.",
+  "license": "GPL-3.0",
+  "scripts": {
+    "gulp": "./node_modules/.bin/gulp"
+  },
+  "dependencies": {
+    "@uirouter/angularjs": "1.0.18",
+    "angular": "1.7.0",
+    "angular-animate": "1.7.0",
+    "angular-aria": "1.7.0",
+    "angular-material": "1.1.9",
+    "angular-messages": "1.7.0",
+    "angular-sanitize": "^1.7.7"
+  },
+  "devDependencies": {
+    "@types/angular": "^1.6.54",
+    "@types/angular-material": "^1.1.64",
+    "browserify": "17.0.0",
+    "del": "6.0.0",
+    "gulp": "4.0.2",
+    "gulp-concat-css": "^3.1.0",
+    "gulp-if": "3.0.0",
+    "gulp-rename": "2.0.0",
+    "gulp-sass": "4.1.0",
+    "gulp-shell": "0.8.0",
+    "gulp-sourcemaps": "2.6.5",
+    "gulp-typescript": "5.0.1",
+    "gulp-uglify": "3.0.2",
+    "gulp-uglifycss": "^1.1.0",
+    "node-sass": "5.0.0",
+    "typescript": "4.0.2",
+    "uglify-es": "^3.3.9",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
+  }
+}

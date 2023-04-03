@@ -1,0 +1,13 @@
+{
+	"name": "PrivacySafe startup",
+	
+	"appDomain": "startup.app.privacysafe.io",
+
+	"version": "0.6.3",
+
+	"windowOpts": {
+		"width": 400,
+		"height": 600
+	}
+
+}
