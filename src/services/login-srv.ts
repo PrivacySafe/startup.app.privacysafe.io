@@ -36,6 +36,14 @@ export class LoginSrv {
     this._signUpSrv = w3n.signUp;
   }
 
+  setSignUpServer(signupUrl: string): IPromise<void> {
+    return this.$q.when(this._signUpSrv.setSignUpServer(signupUrl));
+  }
+
+  getAvailableDomains(signupToken: string|undefined): IPromise<string[]> {
+    return this.$q.when(this._signUpSrv.getAvailableDomains(signupToken));
+  }
+
   /**
    * read info about application users (on disk)
    */
@@ -44,12 +52,17 @@ export class LoginSrv {
   }
 
   /**
-   * get available addresses
+   * get available addresses for username
    * @param username {string}
+   * @param signupToken
    * @return {angular.IPromise<string[]>}
    */
-  getPossibleDomain(username: string): IPromise<string[]> {
-    return this.$q.when(this._signUpSrv.getAvailableAddresses(username));
+  getAvailableAddresses(
+    username: string, signupToken: string|undefined
+  ): IPromise<string[]> {
+    return this.$q.when(
+      this._signUpSrv.getAvailableAddresses(username, signupToken)
+    );
   }
 
   /**
@@ -64,10 +77,13 @@ export class LoginSrv {
   /**
    * create new account
    * @param login {string}
+   * @param signupToken
    * @return {angular.IPromise<boolean>}
    */
-  createNewAccount(login: string): IPromise<boolean> {
-    return this.$q.when(this._signUpSrv.addUser(login));
+  createNewAccount(
+    login: string, signupToken: string|undefined
+  ): IPromise<boolean> {
+    return this.$q.when(this._signUpSrv.addUser(login, signupToken));
   }
 
   private getLoginOnDisk(): IPromise<string[]> {
@@ -149,7 +165,7 @@ export class LoginSrv {
                     return {success: false, error: 'Unknown error! Try again.', errorType: undefined};
                   })
               } else {
-                return {success: false, error: `Login ${login} is unknown!`, errorType: 'login'};
+                return {success: false, error: `Username ${login} is unknown!`, errorType: 'login'};
               }
             })
         }
@@ -158,14 +174,15 @@ export class LoginSrv {
         console.error(err);
         let errorText = 'Unknown error! Try again.';
         let errorType = undefined;
+        let domain = login.substring(login.indexOf('@')+1);
 
         if (!!err.domainNotFound) {
-          errorText = 'Error. Domain fot found. Enter correct login.';
+          errorText = `Error. Domain ${domain} not found. Have you entered correct username with domain section?`;
           errorType = 'login';
         }
 
         if (!!err.noServiceRecord) {
-          errorText = `Error. Server doesn't 3N-protocol. Enter correct login.`;
+          errorText = `Error. Server at ${domain} isn't configured with 3N protocols. Have you entered correct username with domain section?`;
           errorType = 'login';
         }
 

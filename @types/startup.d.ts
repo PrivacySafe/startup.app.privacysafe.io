@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2016 - 2017 3NSoft Inc.
+ Copyright (C) 2016 - 2017, 2020, 2023 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -22,22 +22,38 @@ declare namespace web3n.startup {
 	 * functionality, when user creates new account in 3NWeb domains.
 	 */
 	interface SignUpService {
-		
+
+		/**
+		 * @param serviceUrl of 3NWeb signup service url.
+		 */
+		setSignUpServer(serviceUrl: string): Promise<void>;
+
+		/**
+		 * @param signupToken
+		 * @return a promise, resolvable to an array of available domains for
+		 * creation of a new account.
+		 */
+		getAvailableDomains(signupToken?: string): Promise<string[]>;
+
 		/**
 		 * @param name is a part of address that comes before @domain
+		 * @param signupToken
 		 * @return a promise, resolvable to an array of available 3NWeb addresses
 		 * with a given name part of the address.
 		 * Array will be empty, when there are no available addresses for a given
 		 * name.
 		 */
-		getAvailableAddresses(name: string): Promise<string[]>;
+		getAvailableAddresses(
+			name: string, signupToken?: string
+		): Promise<string[]>;
 		
 		/**
 		 * @param userId
+		 * @param signupToken
 		 * @return a promise, resolvable to flag that indicates whether an account
 		 * for given user has been created (true value), or not (false value).
 		 */
-		addUser(userId: string): Promise<boolean>;
+		addUser(userId: string, signupToken?: string): Promise<boolean>;
 		
 		/**
 		 * @param userId
@@ -52,8 +68,10 @@ declare namespace web3n.startup {
 		 * @param pass
 		 * @param progressCB is a callback for progress notification
 		 */
-		createUserParams(pass: string,
-			progressCB: (progress: number) => void): Promise<void>;
+		createUserParams(
+			pass: string,
+			progressCB: (progress: number) => void
+		): Promise<void>;
 		
 	}
 	

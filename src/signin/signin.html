@@ -36,10 +36,10 @@
     ng-if="!$ctrl.selectLogin"
     class="input__field"
   >
-    <label>Login</label>
+    <label>Username</label>
     <input
       type="text"
-      placeholder="Enter your login (name@privacysafe.me)"
+      placeholder="Enter your username (name@privacysafe.me)"
       name="login"
       ng-disabled="$ctrl.isWait"
       ng-model="$ctrl.user.login"
@@ -55,7 +55,7 @@
     <label>Password</label>
     <input
       type="password"
-      placeholder="Enter the password"
+      placeholder="Enter your password"
       name="password"
       ng-disabled="$ctrl.isWait"
       ng-model="$ctrl.user.password"
@@ -70,14 +70,14 @@
       type="button"
       class="signin__action-mode-trigger"
       ng-click="$ctrl.changeEnterMode()">
-      Change account
+      Another account
     </a>
     <md-button
       class="signin__action-btn"
       ng-disabled="!$ctrl.user.login || !$ctrl.user.password"
       ng-click="$ctrl.signIn()"
     >
-      ENTER
+      LOGIN
     </md-button>
   </div>
   <div
@@ -89,7 +89,7 @@
 
   <div class="signin__registration">
     <div class="signin__registration--title">
-      Don't have an account? Create!
+      Don't have an account in 3NWeb? Create one!
     </div>
     <md-button
       class="signin__registration--action"

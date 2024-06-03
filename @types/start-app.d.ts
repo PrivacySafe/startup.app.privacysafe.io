@@ -6,6 +6,9 @@ declare namespace web3n.start {
     passwordConfirm?: string;
     name?: string;
     domain?: string;
+    signupToken?: string;
+    customServiceUrl?: string;
+    availableDomains?: string[];
   }
 
 }

@@ -23,6 +23,10 @@ interface SignUpScope extends IScope {
   signup: any;
 }
 
+type SignUpStep = 'provider-choice' |
+  'ps-1' | 'ps-2' | 'ps-3' |
+  'custom-1' | 'custom-2' | 'custom-3' | 'custom-4';
+
 class Controller {
   CONST = {
     NAME_MIN_LENGTH: 6,
@@ -32,64 +36,78 @@ class Controller {
   user: web3n.start.User = {
     login: '',
     password: '',
-    passwordConfirm: '',
-    name: '',
-    domain: '@privacysafe.me',
   };
-  step: number = 1;
-  signupError: string = '';
-  isWait: boolean = false;
-  waitText: string = '';
+  step: SignUpStep = 'provider-choice';
+  signupError = '';
+  isWait = false;
+  waitText = '';
   questions = {
     q1: false,
     q2: false,
     q3: false,
   };
-  isCreateDisabled: boolean = true;
+  isCreateDisabled = true;
 
 
-  static $inject = ['$scope', '$state', '$q', '$timeout', LoginSrvMod.LoginSrvName];
+  static $inject = ['$scope', '$state', '$timeout', LoginSrvMod.LoginSrvName];
   constructor(
     private $scope: SignUpScope,
     private $state: StateService,
-    private $q: IQService,
     private $timeout: ITimeoutService,
     private _loginSrv: LoginSrvMod.LoginSrv
   ) { 
+  }
+
+  private focusOnTextInput(nameSelector: string): void {
     this.$timeout(() => {
-      const nameInputElement = (document.querySelector('input[name="loginname"]') as HTMLInputElement);
-      nameInputElement.focus();
-    });
+      const txtInput = document.querySelector(
+        `input[name="${nameSelector}"]`
+      ) as HTMLInputElement;
+      txtInput.focus();
+    }, 20);
   }
 
   goToSignin(): void {
     this.$state.go('signin');
   }
 
-  back(): void {
-    this.signupError = '';
-    switch (this.step) {
-      case 2:
-        this.step = 1;
-        this.user.password = '';
-        this.user.passwordConfirm = '';
-        this.$timeout(() => {
-          const nameInputElement = (document.querySelector('input[name="loginname"]') as HTMLInputElement);
-          nameInputElement.focus();
-        });
-        break;
-      case 3:
-        this.step = 2;
-        this.questions = {
-          q1: false,
-          q2: false,
-          q3: false,
-        };
-        this.$timeout(() => {
-          const passwInputElement = (document.querySelector('input[name="password"]') as HTMLInputElement);
-          passwInputElement.focus();
-        });
-        break;
+  startPrivacySafeSignup(): void {
+    this.user.domain = 'privacysafe.me';
+    this.user.customServiceUrl = undefined;
+    this.user.availableDomains = undefined;
+    this.changeStepTo('ps-1', 'loginname');
+  }
+
+  startCustomSignup(): void {
+    this.user.domain = undefined;
+    this.user.customServiceUrl = undefined;
+    this.user.availableDomains = undefined;
+    this.changeStepTo('custom-1', 'customServiceUrl');
+  }
+
+  private setWaitOnAction(waitText?: string): void {
+    this.$timeout(() => {
+      this.isWait = true;
+      this.waitText = waitText;
+      this.signupError = '';
+    });
+  }
+
+  private endWait(signupError = ''): void {
+    this.isWait = false;
+    this.waitText = '';
+    this.signupError = signupError;
+  }
+
+  private clearStateOnStepChange(): void {
+    this.endWait();
+  }
+
+  private changeStepTo(step: SignUpStep, txtFieldToFocus?: string): void {
+    this.clearStateOnStepChange();
+    this.step = step;
+    if (txtFieldToFocus) {
+      this.focusOnTextInput(txtFieldToFocus);
     }
   }
 
@@ -105,28 +123,39 @@ class Controller {
         switch (field) {
           case 'name':
             if (!!this.user.name) {
-              if (
-                this.user.name.length >= this.CONST.NAME_MIN_LENGTH &&
-                this.user.name.length <= this.CONST.NAME_MAX_LENGTH &&
-                !this.user.name.includes('@')
-              ) {
-                this.proceed(1);
+              if (this.step === 'ps-1') {
+                if (
+                  this.user.name.length >= this.CONST.NAME_MIN_LENGTH &&
+                  this.user.name.length <= this.CONST.NAME_MAX_LENGTH &&
+                  !this.user.name.includes('@')
+                ) {
+                    this.doOnStepPS1();
+                }
+              } else if (this.step === 'custom-2') {
+                if (
+                  this.user.name.length > 0 &&
+                  !this.user.name.includes('@')
+                ) {
+                  this.doOnStepCustom2();
+                }
               }
             }
             break;
           case 'password':
             if (!!this.user.password) {
               if (this.user.password.length >= this.CONST.PASSWORD_MIN_LENGTH) {
-                this.$timeout(() => {
-                  (document.querySelector('input[name="confirmpassword"]') as HTMLInputElement).focus();
-                })
+                this.focusOnTextInput('confirmpassword');
               }
             }
             break;
           case 'passwordConfirm':
             if (!!this.user.passwordConfirm) {
               if (!this.$scope.signup.$invalid && !this.signupError) {
-                this.proceed(2);
+                if (this.step === 'ps-2') {
+                  this.doOnStepPS2();
+                } 
+              } else if (this.step === 'custom-3') {
+                this.doOnStepCustom3();
               }
             }
             break;
@@ -135,69 +164,48 @@ class Controller {
     }
   }
 
-  proceed(step: number): void {
-    switch (step) {
-      case 1:
-        this.stepOne();
-        break;
-      case 2:
-        this.stepTwo();
-        break;
-      case 3:
-        this.createAccount();
-        break;
-    }
+  private doOnUsernameCheckingStep(nextStep: SignUpStep): void {
+    this.setWaitOnAction(`Checking available addresses ...`);
+    this.user.login = `${this.user.name}@${this.user.domain}`;
+    this._loginSrv.getAvailableAddresses(
+      this.user.name,
+      (this.user.signupToken ? this.user.signupToken : undefined)
+    )
+    .then(possibleLogins => {
+      if (possibleLogins.includes(this.user.login)) {
+        this.changeStepTo(nextStep, 'password');
+      } else {
+        this.endWait(`Try another username. Account ${this.user.login} is not available.`);
+      }
+    })
+    .catch(err => {  
+      console.error(err);
+      this.endWait(`Unknown error. Try later.`);
+    });
   }
 
-  stepOne(): void {
-    this.isWait = true;
-    this.user.login = `${this.user.name}${this.user.domain}`;
-    this.$q.when(this._loginSrv.getPossibleDomain(this.user.name))
-      .then(possibleLogins => {
-        // console.log(possibleLogins)
-        if (possibleLogins.includes(this.user.login)) {
-          this.step = 2;
-          this.signupError = '';
-          this.isWait = false;
-          this.$timeout(() => {
-            const passwInputElement = (document.querySelector('input[name="password"]') as HTMLInputElement);
-            passwInputElement.focus();
-          })
-        } else {
-          this.isWait = false;
-          this.signupError = `Error. The login ${this.user.login} already used.`;
-        }
-      })
-      .catch(err => {  
-        console.error(err);
-        this.isWait = false;
-        this.signupError = `Unknown error. Try later.`;
-        this.$timeout(() => {
-          this.signupError = '';
-        }, NOTIF_DURATION);
-      });
+  doOnStepPS1(): void {
+    this.doOnUsernameCheckingStep('ps-2');
   }
 
-  stepTwo(): void {
-    this.isWait = true;
+  private doOnKeyGenerationStep(nextStep: SignUpStep): void {
+    this.setWaitOnAction(`Secret key generation`);
     this._loginSrv.getLoginKey(this.user.password, (progress: number) => {
-      console.info(progress);
       this.$timeout(() => {
-        this.waitText = `Secret key generation is completed by ${progress}%`;
+        this.setWaitOnAction(`Secret key generation is completed by ${progress}%`);
       });
     })
     .then(() => {
-      this.isWait = false;
-      this.waitText = '';
-      this.step = 3;
-      this.signupError = '';
+      this.changeStepTo(nextStep);
     })
     .catch(err => {
       console.error(err);
-      this.isWait = false;
-      this.waitText = '';
-      this.signupError = `Error when generating a secret key. Try again.`;
+      this.endWait(`Error when generating a secret key. Try again.`);
     });
+  }
+
+  doOnStepPS2(): void {
+    this.doOnKeyGenerationStep('ps-3');
   }
 
   checkPassword(event: KeyboardEvent): void {
@@ -227,23 +235,55 @@ class Controller {
   }
 
   createAccount(): void {
-    // console.log(this.user.login)
-    this.isWait = true;
-    this.waitText = 'Account creation in progress ...';
-    this.$q.when(this._loginSrv.createNewAccount(this.user.login))
-      .then(created => {
-        if (!created) {
-          this.isWait = false;
-          this.waitText = '';
-          this.signupError = `Unfortunately, there was an error creating the user ${this.user.login}. Restart Sign Up!`;
-        }
-      })
-      .catch(err => {
+    this.setWaitOnAction('Account creation in progress ...');
+    this._loginSrv.createNewAccount(
+      this.user.login,
+      (this.user.signupToken ? this.user.signupToken : undefined)
+    )
+    .then(created => {
+      if (!created) {
+        this.endWait(`Unfortunately, there was an error creating the user ${this.user.login}. Restart Sign Up.`);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      this.endWait(`Unknown error. Try again.`);
+    });
+  }
+
+  doOnStepCustom1(): void {
+    this.setWaitOnAction('Connecting to service ...');
+    this._loginSrv.setSignUpServer(this.user.customServiceUrl)
+    .then(() => this._loginSrv.getAvailableDomains(this.user.signupToken))
+    .then(domains => {
+      if (domains.length === 0) {
+        this.endWait(`No domains available. Try another token?`);
+      } else if (domains.length === 1) {
+        this.user.domain = domains[0];
+        this.changeStepTo('custom-2');
+      } else {
+        this.user.availableDomains = domains;
+        this.changeStepTo('custom-2');
+      }
+    })
+    .catch(err => {
+      if (err.type === 'http-request') {
+        this.endWait(`Service's response is not ok. Verify its url.`);
+      } else if (err.type === 'http-connect') {
+        this.endWait(`Can't connect to service. Verify service url.`);
+      } else {
         console.error(err);
-        this.isWait = false;
-        this.waitText = '';
-        this.signupError = `Unfortunately, there was an error creating the user ${this.user.login}. Restart Sign Up!`;
-      });
+        this.endWait(`Unknown error. Try again.`);
+      }
+    });
+  }
+
+  doOnStepCustom2(): void {
+    this.doOnUsernameCheckingStep('custom-3');
+  }
+
+  doOnStepCustom3(): void {
+    this.doOnKeyGenerationStep('custom-4');
   }
 
 }
