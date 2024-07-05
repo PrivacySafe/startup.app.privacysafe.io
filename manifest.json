@@ -3,11 +3,13 @@
 	
 	"appDomain": "startup.app.privacysafe.io",
 
-	"version": "0.7.0",
+	"version": "0.7.1",
 
 	"windowOpts": {
 		"width": 400,
 		"height": 600
-	}
+	},
+
+	"icon": "./assets/logo.png"
 
 }
