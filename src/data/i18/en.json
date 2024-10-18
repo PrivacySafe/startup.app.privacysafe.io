@@ -1,0 +1,84 @@
+{
+  "signin.title": "Sign In",
+  "signin.welcome": "Welcome, {username}",
+  "signin.opt.other_login": "Other Login",
+  "field.label.login": "Login",
+  "placeholder.login": "Enter your Login, e.g. user@privacysafe.me",
+  "placeholder.enter_password": "Enter your Password",
+  "signin.btn.enter": "Enter",
+  "signin.btn.entering": "Entering ... {percent}%",
+  "signin.btn.make_account": "Create New Account",
+  "signin.make_account.txt": "Don't have an account? Create one!",
+
+  "signup.title": "Create New Account",
+
+  "signup.choice.title": "Select Provider",
+  "signup.choice.txt": "Select provider for your new account. If you are unsure about your provider, contact your administrator for more details.",
+  "signup.choice.txt_or": "OR",
+  "signup.choice.btn.custom_provider": "Custom Service",
+  "signup.choice.btn.privacysafe_provider": "PrivacySafe Service",
+
+  "signup.step_count": "Step {num} of {total}",
+  "signup.step.btn.next": "Next",
+
+  "signup.step.custom_provider": "Connecting to custom server",
+  "signup.step.custom_provider.txt": "Enter custom signup service URL that will create a 3NWeb account.",
+  "signup.step.custom_provider.long_process": "Connecting to {url} ... {seconds} seconds",
+  "signup.step.custom_provider.status.have_domains_without_token": "Signup domains available without token",
+  "signup.step.custom_provider.status.have_domains_with_token": "Domains available with token",
+  "signup.step.custom_provider.status.no_domains_without_token": "No domains. May need token.",
+  "signup.step.custom_provider.status.no_domains_with_token": "No domains. Is token correct?",
+  "signup.step.custom_provider.err.no_connect": "Fail to connect. Is url correct?",
+  "signup.step.custom_provider.err.non_ok_status": "Server replies funny ({status}). Is url correct?",
+  "signup.step.custom_provider.err.general": "Error occured. Is url correct? Is device online?",
+
+  "field.label.custom_srv_url": "Custom service URL",
+  "placeholder.custom_srv_url": "e.g. www.supersafe.online/",
+  "field.label.opt_token": "Optional signup token",
+
+  "signup.step.create_user": "Create username",
+  "signup.step.create_user.txt": "Uservame should be between 6 and 60 characters. You can use letters, numbers, and any characters except the @ symbol. You can use characters from any language.",
+
+  "signup.step.create_user.status.addr_available": "Address {address} is available.",
+  "signup.step.create_user.status.addr_not_available": "Address {address} is not available.",
+
+  "field.label.username": "Login",
+  "placeholder.username": "Enter desired username",
+
+  "signup.step.user_domain": "Register to domain:",
+
+  "signup.step.create_password": "Create password",
+  "signup.step.create_password.txt": "Your login password must be at least 12 characters. You can use letters, numbers and any characters. You can use characters from any language.",
+
+  "signup.step.acknowledgments": "Important acknowledgement",
+  "signup.step.acknowledgments.txt.intro": "Please read and acknowledge if you agree with following:",
+  "signup.step.acknowledgments.txt.check1.p1": "I understand that it is",
+  "signup.step.acknowledgments.txt.check1.p2": "impossible to recover",
+  "signup.step.acknowledgments.txt.check1.p2.tip": "You control your password for your own safety.",
+  "signup.step.acknowledgments.txt.check1.p3": "the password.",
+  "signup.step.acknowledgments.txt.check2.p1": "I agree to remember the password or make a",
+  "signup.step.acknowledgments.txt.check2.p2": "paper copy",
+  "signup.step.acknowledgments.txt.check2.p2.tip": "Write on paper, or another non-digital form.",
+  "signup.step.acknowledgments.txt.check2.p3": ".",
+  "signup.step.acknowledgments.txt.check3.p1": "I will make a copy of my password and store it securely with my",
+  "signup.step.acknowledgments.txt.check3.p2": "trustee",
+  "signup.step.acknowledgments.txt.check3.p2.tip": "Trustee may be close family, friends, lawyers, etc.",
+  "signup.step.acknowledgments.txt.check3.p3": ".",
+
+  "signup.step.progress.txt": "Please wait a few moments while your account keys are generated, and server creates an account for you. Do not close this window.",
+
+  "field.label.password": "Password",
+  "placeholder.create_password": "Create your password",
+  "field.label.confirm_password": "Confirm password",
+  "placeholder.confirm_password": "Repeat your password",
+
+  "err.short_password": "password is too short",
+  "err.try_other_pass": "try other password",
+  "err.passwords_not_same": "Passwords are not the same.",
+  "err.domain_not_found": "Domain {domain} is not found. Is it entered correctly?",
+  "err.domain_has_no_srv": "Domain {domain} has no service. Is it entered correctly?",
+  "err.cant_connect_to_srv_on_domain": "Can't connect to service at {domain}",
+  "err.incorrect_password": "Incorrect password. Try again.",
+  "err.login_not_recognized": "Login {login} is not recognized. Is it entered correctly?",
+  "err.incorrect_login": "Incorrect login."
+}
