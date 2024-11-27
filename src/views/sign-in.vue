@@ -42,8 +42,7 @@ const usersOnDisk = ref<string[]>([]);
 const menuOptions = computed(
   () => (usersOnDisk.value.length > 0) ?
     usersOnDisk.value
-    .filter(addr => (addr !== userOnDisk.value))
-    .concat('') :
+    .filter(addr => (addr !== userOnDisk.value)) :
     []
 );
 
@@ -93,7 +92,7 @@ function setPasswordInputErr(errMsg: string|undefined) {
   }
 }
 
-function setUserOnDisk(userId: string) {
+function setUserOnDisk(userId: string|undefined) {
   if (userId) {
     userOnDisk.value = userId;
     userNotOnDisk.value = '';
@@ -249,13 +248,24 @@ async function startNewLogin() {
             />
           </div>
           <template #menu>
-            <div :class=$style.menuOption
-              v-for="userId in menuOptions"
-              :key=userId
-              @click=setUserOnDisk(userId)
-            >
-              {{ (userId.length > 0) ? userId : $tr('signin.opt.other_login') }}
+            <div :class=$style.menuOptsList>
+              <div :class=$style.menuOption
+                v-for="userId in menuOptions"
+                :key=userId
+                @click=setUserOnDisk(userId)
+              >
+                {{ userId }}
+              </div>
             </div>
+            <ui3n-button
+              type="custom"
+              block
+              color="var(--color-bg-button-tritery-default)"
+              text-color="var(--color-text-button-tritery-default)"
+              @click=setUserOnDisk(undefined)
+            >
+              {{ $tr('signin.opt.other_login') }}
+            </ui3n-button>
           </template>
         </ui3n-menu>
       </div>
@@ -345,6 +355,11 @@ async function startNewLogin() {
 .dropDownIcon {
   position: absolute;
   right: var(--spacing-xs);
+}
+
+.menuOptsList {
+  max-height: 10rem;
+  overflow-y: auto;
 }
 
 .menuOption {

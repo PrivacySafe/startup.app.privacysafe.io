@@ -19,7 +19,7 @@
     "test:watch": "pnpm run clean:coverage && jest --watch"
   },
   "dependencies": {
-    "@v1nt1248/3nclient-lib": "0.1.29",
+    "@v1nt1248/3nclient-lib": "0.1.36",
     "pinia": "2.2.1",
     "punycode": "^2.3.1",
     "vue": "3.5.6",

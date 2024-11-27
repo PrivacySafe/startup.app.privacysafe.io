@@ -10,19 +10,20 @@
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import App from '@/views/app.vue';
-import { router } from '@/router';
 import {
   i18n,
   I18nOptions,
   storeI18n,
 } from '@v1nt1248/3nclient-lib/plugins';
 
-import '@v1nt1248/3nclient-lib/style.css';
 import '@v1nt1248/3nclient-lib/variables.css';
+import '@v1nt1248/3nclient-lib/style.css';
 import '@/assets/styles/main.css';
 
 import en from '@/data/i18/en.json';
+
+import App from '@/views/app.vue';
+import { router } from '@/router';
 
 async function init(): Promise<void> {
 
