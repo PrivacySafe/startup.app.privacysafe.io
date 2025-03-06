@@ -37,7 +37,7 @@
   "field.label.opt_token": "Optional signup token",
 
   "signup.step.create_user": "Create username",
-  "signup.step.create_user.txt": "Uservame should be between 6 and 60 characters. You can use letters, numbers, and any characters except the @ symbol. You can use characters from any language.",
+  "signup.step.create_user.txt": "Username should be between 6 and 60 characters. You can use letters, numbers, and any characters except the @ symbol. You can use characters from any language.",
 
   "signup.step.create_user.status.addr_available": "Address {address} is available.",
   "signup.step.create_user.status.addr_not_available": "Address {address} is not available.",
