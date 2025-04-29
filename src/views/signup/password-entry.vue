@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -18,9 +18,12 @@
 <script lang="ts" setup>
 import { ref, computed, inject } from 'vue';
 import SignupStep from '@/components/signup-step.vue';
-import { Ui3nInput } from '@v1nt1248/3nclient-lib';
+import { Ui3nInput, Ui3nTooltip } from '@v1nt1248/3nclient-lib';
 import { useSignupStore } from '@/store';
 import { I18N_KEY, I18nPlugin } from '@v1nt1248/3nclient-lib/plugins';
+import { useInputState } from './useInputState';
+import { findIndexOfFirstDisallowedCharIn } from '@/utils/validations';
+import { strictASCiiForPassword } from '@/utils/unicode-ranges';
 
 defineProps<{
   currentStep: number;
@@ -33,62 +36,112 @@ const signupState = useSignupStore();
 signupState.password = '';
 signupState.keyGenerationProc = undefined;
 
+const isCustomService = signupState.customSrvUrlWasSet;
+
 const password = ref('');
-const passOk = ref(false);
-const passErrorMsg = ref('');
-const passState = computed(() => {
-  if (passErrorMsg.value.length > 0) {
-    return 'error';
-  } else if (passOk.value) {
-    return 'success';
-  } else {
+const {
+  stateMsg: passErrorMsg,
+  stateMode: passState,
+  setState: setPassMsg,
+  clearState: clearPassMsg,
+  setStateForSecs: setPassMsgForSecs
+} = useInputState();
+const passOk = computed(() => (passState.value === 'success'));
+
+const MIN_PASS_LENGTH = 12;
+
+function validatePasswordDuringInput() {
+  if (isCustomService) {
     return;
   }
-});
-
-const passConfirmation = ref('');
-const confirmErrorMsg = ref('');
-const passValuesAreSame = computed(
-  () => (passOk.value && (password.value === passConfirmation.value))
-);
-const confirmationStatus = computed(() => {
-  if (confirmErrorMsg.value.length > 0) {
-    return 'error';
-  } else if (passValuesAreSame.value) {
-    return 'success';
-  } {
-    return;
-  }
-});
-
-function checkPassword() {
-  passOk.value = (password.value.length >= 12);
-}
-
-function showPassStatus() {
-  if (passOk.value) {
-    passErrorMsg.value = '';
-  } else if (password.value.length < 12) {
-    passErrorMsg.value = $tr('err.short_password');
+  const invalidCharInd = findIndexOfFirstDisallowedCharIn(
+    password.value, strictASCiiForPassword
+  );
+  if (invalidCharInd > -1) {
+    const invalidChar = password.value[invalidCharInd];
+    setPassMsgForSecs(
+      $tr('signup.step.create_password.status.invalid_char', {
+        char: invalidChar
+      }),
+      'error', 3
+    );
+    setTimeout(() => {
+      password.value = password.value.substring(0, invalidCharInd);
+    });
   } else {
-    passErrorMsg.value = $tr('err.try_other_pass');
+    if (password.value.length < MIN_PASS_LENGTH) {
+      clearPassMsg();
+    } else {
+      setPassMsg('', 'success');
+    }
   }
 }
 
 function onPassFocus() {
-  passErrorMsg.value = '';
+  validatePasswordDuringInput();
 }
 
-function showConfirmationStatus() {
-  if (passValuesAreSame.value) {
-    confirmErrorMsg.value = '';
+function validatePasswordOnChange() {
+  if (password.value.length < MIN_PASS_LENGTH) {
+    setPassMsg(
+      $tr('signup.step.create_password.status.password_too_short'),
+      'error'
+    );
+    return;
+  }
+  const invalidCharInd = findIndexOfFirstDisallowedCharIn(
+    password.value, strictASCiiForPassword
+  );
+  if (invalidCharInd > -1) {
+    const invalidChar = password.value[invalidCharInd];
+    setPassMsg(
+      $tr('signup.step.create_password.status.invalid_char', {
+        char: invalidChar
+      }),
+      'error'
+    );
   } else {
-    confirmErrorMsg.value = $tr('err.passwords_not_same');
+    setPassMsg('', 'success');
   }
 }
 
-function clearConfirmationStatus() {
-  confirmErrorMsg.value = '';
+const passConfirmation = ref('');
+const passValuesAreSame = computed(
+  () => (passOk.value && (password.value === passConfirmation.value))
+);
+const {
+  stateMsg: confirmErrorMsg,
+  stateMode: confirmationStatus,
+  setState: setConfirmMsg,
+  clearState: clearConfirmationStatus
+} = useInputState();
+
+function comparePasswords() {
+  if (!passOk.value) {
+    clearConfirmationStatus();
+  } else if (passConfirmation.value.length > password.value.length) {
+    setConfirmMsg(
+      $tr('signup.step.create_password.status.passwords_not_same'),
+      'error'
+    );
+  } else if (passConfirmation.value === password.value) {
+    setConfirmMsg('', 'success');
+  } else {
+    clearConfirmationStatus();
+  }
+}
+
+function comparePasswordsOnChange() {
+  if (!passOk.value) {
+    clearConfirmationStatus();
+  } else if (passConfirmation.value === password.value) {
+    setConfirmMsg('', 'success');
+  } else {
+    setConfirmMsg(
+      $tr('signup.step.create_password.status.passwords_not_same'),
+      'error'
+    );
+  }
 }
 
 function startKeyGenProcess() {
@@ -117,7 +170,23 @@ function startKeyGenProcess() {
   >
 
     <div :class=$style.text>
-      {{ $tr('signup.step.create_password.txt') }}
+      <span>{{ $tr('signup.step.create_password.txt.p1') }}</span>
+      <ui3n-tooltip :class=$style.tooltip
+        :content="$tr('signup.step.create_password.txt.p2.tip')"
+        placement="top-end"
+        trigger="hover"
+      >
+        {{ $tr('signup.step.create_password.txt.p2') }}
+      </ui3n-tooltip>
+      <span>{{ $tr('signup.step.create_password.txt.p3') }}</span>
+      <ui3n-tooltip :class=$style.tooltip
+        :content="$tr('signup.step.create_password.txt.p4.tip')"
+        placement="top-end"
+        trigger="hover"
+      >
+        {{ $tr('signup.step.create_password.txt.p4') }}
+      </ui3n-tooltip>
+      <span>{{ $tr('signup.step.create_password.txt.p5') }}</span>
     </div>
 
     <div :class=$style.input>
@@ -127,8 +196,8 @@ function startKeyGenProcess() {
         :placeholder="$tr('placeholder.create_password')"
         v-model=password
         @focus=onPassFocus
-        @input=checkPassword
-        @change=showPassStatus
+        @input=validatePasswordDuringInput
+        @change=validatePasswordOnChange
         :display-state-mode=passState
         display-state-with-icon
         :display-state-message=passErrorMsg
@@ -145,8 +214,8 @@ function startKeyGenProcess() {
         display-state-with-icon
         :display-state-message=confirmErrorMsg
         @focus=clearConfirmationStatus
-        @change=showConfirmationStatus
-        @input=checkPassword
+        @change=comparePasswordsOnChange
+        @input=comparePasswords
       />
     </div>
 
@@ -158,6 +227,14 @@ function startKeyGenProcess() {
   margin-top: var(--spacing-xxl);
   margin-bottom: var(--spacing-l);
   font-size: var(--font-12);
+}
+
+.tooltip {
+  display: inline-block;
+  text-decoration: underline;
+}
+.tooltip div {
+  max-width: 20em;
 }
 
 .input {

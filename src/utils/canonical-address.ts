@@ -88,5 +88,3 @@ export function checkAndTransformAddress(address: string): string|undefined {
 		return toCanonicalAddress(address);
 	} catch (err) { }
 }
-
-Object.freeze(exports);

@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,7 @@ import Card from '@/components/card.vue';
 import { Ui3nButton, Ui3nInput, Ui3nInputProps, Ui3nMenu, Ui3nIcon } from '@v1nt1248/3nclient-lib';
 import { computed, inject, onMounted, ref } from 'vue';
 import { useLoggedInUserStore } from '@/store';
-import { UserIdParseException, areAddressesEqual, toCanonicalAddress } from '@/lib-common/canonical-address';
+import { UserIdParseException, areAddressesEqual, toCanonicalAddress } from '@/utils/canonical-address';
 import { I18N_KEY, I18nPlugin } from '@v1nt1248/3nclient-lib/plugins';
 
 const { $tr } = inject<I18nPlugin>(I18N_KEY)!;
@@ -220,6 +220,11 @@ async function startNewLogin() {
     :title=signinTitle
     :hide-back-btn=true
   >
+
+    <div :class=$style.logo>
+      <img src="/privacysafe_logo.svg"/>
+    </div>
+
     <div :class=$style.top>
 
       <ui3n-input
@@ -321,6 +326,14 @@ async function startNewLogin() {
 </template>
 
 <style lang="scss" module>
+.logo {
+  width: 100%;
+  text-align: center;
+}
+.logo img {
+  height: var(--spacing-xxl);
+}
+
 .top {
   position: absolute;
   top: calc(2*var(--spacing-xxl));

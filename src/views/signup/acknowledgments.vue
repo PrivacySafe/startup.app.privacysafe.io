@@ -28,6 +28,33 @@ defineProps<{
 const checks = ref([false, false, false]);
 const allChecked = computed(() => checks.value.reduce((a, b) => (a && b)));
 
+const checkboxText = [
+  [
+    'signup.step.acknowledgments.txt.check1.p1',
+    {
+      txt: 'signup.step.acknowledgments.txt.check1.p2',
+      tip: 'signup.step.acknowledgments.txt.check1.p2.tip'
+    },
+    'signup.step.acknowledgments.txt.check1.p3'
+  ],
+  [
+    'signup.step.acknowledgments.txt.check2.p1',
+    {
+      txt: 'signup.step.acknowledgments.txt.check2.p2',
+      tip: 'signup.step.acknowledgments.txt.check2.p2.tip'
+    },
+    'signup.step.acknowledgments.txt.check2.p3'
+  ],
+  [
+    'signup.step.acknowledgments.txt.check3.p1',
+    {
+      txt: 'signup.step.acknowledgments.txt.check3.p2',
+      tip: 'signup.step.acknowledgments.txt.check3.p2.tip'
+    },
+    'signup.step.acknowledgments.txt.check3.p3'
+  ]
+];
+
 </script>
 
 <template>
@@ -36,6 +63,7 @@ const allChecked = computed(() => checks.value.reduce((a, b) => (a && b)));
     :total-steps=totalSteps
     :step-description="$tr('signup.step.acknowledgments')"
     :this-step-done=allChecked
+    :next-btn-txt="$tr('signup.step.acknowledgments.btn')"
   >
 
     <div :class=$style.text>
@@ -45,19 +73,21 @@ const allChecked = computed(() => checks.value.reduce((a, b) => (a && b)));
     <ui3n-checkbox
       :class=$style.option
       v-for="ind in [0, 1, 2]"
-      :key=ind
       v-model=checks[ind]
     >
-      {{ $tr(`signup.step.acknowledgments.txt.check${ind+1}.p1`) }}
-      <ui3n-tooltip
-        :content="$tr(`signup.step.acknowledgments.txt.check${ind+1}.p2.tip`)"
-        :placement="(ind === 2) ? 'top-start' : 'top-end'"
-        trigger="hover"
-        :class=$style.tooltip
-      >
-        {{ $tr(`signup.step.acknowledgments.txt.check${ind+1}.p2`) }}
-      </ui3n-tooltip>
-      {{ $tr(`signup.step.acknowledgments.txt.check${ind+1}.p3`) }}
+      <template v-for="txtSegment in checkboxText[ind]">
+        <span v-if="typeof txtSegment === 'string'">
+          {{ $tr(txtSegment) }}
+        </span>
+        <ui3n-tooltip v-else
+          :content="$tr(txtSegment.tip)"
+          :placement="(ind === 2) ? 'top-start' : 'top-end'"
+          trigger="hover"
+          :class=$style.tooltip
+        >
+          {{ $tr(txtSegment.txt) }}
+        </ui3n-tooltip>
+      </template>
     </ui3n-checkbox>
 
   </signup-step>
@@ -77,5 +107,8 @@ const allChecked = computed(() => checks.value.reduce((a, b) => (a && b)));
 .tooltip {
   display: inline-block;
   text-decoration: underline;
+}
+.tooltip div {
+  max-width: 20em;
 }
 </style>

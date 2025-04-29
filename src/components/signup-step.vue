@@ -27,6 +27,7 @@ const props = defineProps<{
   thisStepDone: boolean;
   currentStep: number;
   totalSteps: number;
+  nextBtnTxt?: string;
 }>();
 
 const emits = defineEmits<{
@@ -72,7 +73,7 @@ function next() {
         :disabled=!thisStepDone
         @click=next
       >
-        {{ $tr('signup.step.btn.next') }}
+        {{ nextBtnTxt || $tr('signup.step.btn.next') }}
       </ui3n-button>
     </div>
   </card>
