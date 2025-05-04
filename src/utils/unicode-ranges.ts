@@ -28,13 +28,13 @@ export const strictASCiiForUsername = Object.freeze([
 
 export const strictASCiiForPassword = Object.freeze([
 	// values from https://www.unicode.org/charts/PDF/U0000.pdf
-	{ first: 0x21, last: 0x21 },	// ! to !
+	{ first: 0x21, last: 0x21 },	// !
 	{ first: 0x23, last: 0x26 },	// # to &
-	{ first: 0x23, last: 0x26 },	// ( to +
+	{ first: 0x28, last: 0x2B },	// ( to +
 	{ first: 0x2D, last: 0x2E },	// - to .
 	{ first: 0x30, last: 0x3B },	// 0 to ;
 	{ first: 0x3F, last: 0x5A },	// ? to Z
-	{ first: 0x5F, last: 0x5F },	// _
+	{ first: 0x5E, last: 0x5F },	// ^ to _
 	{ first: 0x61, last: 0x7A },	// a to z
 	{ first: 0x7E, last: 0x7E },	// ~
 ] as UnicodeRanges);
