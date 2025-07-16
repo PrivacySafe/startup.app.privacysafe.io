@@ -70,7 +70,7 @@
   "signup.step.create_password.status.password_too_short": "Password is too short",
   "signup.step.create_password.status.passwords_not_same": "Passwords are not the same.",
 
-  "signup.step.acknowledgments": "Important Acknowledgement",
+  "signup.step.acknowledgments": "Important Acknowledgment",
   "signup.step.acknowledgments.txt.intro": "Please read and acknowledge that you agree with following:",
   "signup.step.acknowledgments.txt.check1.p1": "I understand that it is ",
   "signup.step.acknowledgments.txt.check1.p2": "impossible to recover",
@@ -87,6 +87,8 @@
   "signup.step.acknowledgments.btn": "I Understand & Agree",
 
   "signup.step.progress.txt": "Please wait a few moments while your account keys are generated, and server creates an account for you. Do not close this window.",
+
+  "boot-screen.title.txt": "Opening PrivacySafe for",
 
   "field.label.password": "Password",
   "placeholder.create_password": "Create Your Password",

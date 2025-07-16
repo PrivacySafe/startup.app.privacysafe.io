@@ -16,20 +16,36 @@
 -->
 
 <script lang="ts" setup>
-import { useLoggedInUserStore } from '@/store';
+import { useBootEvents, useLoggedInUserStore } from '@/store';
+import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 const loggedIn = useLoggedInUserStore();
-const title = computed(() => `${ loggedIn.userId }`);
+const user = computed(() => `${ loggedIn.userId }`);
+const { eventsLog } = storeToRefs(useBootEvents());
 
 </script>
 
 <template>
   <div :class=$style.info>
     <h3>
-      Opening PrivacySafe for
+      {{ $tr('boot-screen.title.txt') }}
     </h3>
-    {{ title }}
+    {{ user }}
+
+    <div :class="$style.logs">
+      <p
+        v-for="log in eventsLog"
+        :class="(log.isError ? $style.errorLog : (log.isWarning ? $style.warningLog : $style.okLog))"
+      >
+        <span :class="$style.appName"
+        >
+          {{ log.coreApp ? log.coreApp+':' : '' }}
+        </span>
+        <br v-if="!!log.coreApp">
+        {{ log.message }}
+      </p>
+    </div>
 
   </div>
 </template>
@@ -44,6 +60,33 @@ const title = computed(() => `${ loggedIn.userId }`);
   position: relative;
   padding-right: var(--spacing-m);
   padding-left: var(--spacing-m);
+}
+
+.logs {
+  margin-top: var(--spacing-m);
+  padding-left: var(--spacing-s);
+  background-color: black;
+  overflow-y: scroll;
+  position: relative;
+  height: 70%;
+}
+
+.errorLog {
+  color: red;
+}
+
+.warningLog {
+  color: darkgoldenrod;
+}
+
+.okLog {
+  color: cyan;
+}
+
+.appName {
+  color: white;
+  font-style: italic;
+  font-size: small;
 }
 
 </style>

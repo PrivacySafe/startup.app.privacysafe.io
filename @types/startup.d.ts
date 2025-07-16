@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2016 - 2017, 2020, 2023 3NSoft Inc.
+ Copyright (C) 2016 - 2017, 2020, 2023, 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -12,7 +12,8 @@
  See the GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License along with
- this program. If not, see <http://www.gnu.org/licenses/>. */
+ this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 
 declare namespace web3n.startup {
@@ -69,9 +70,10 @@ declare namespace web3n.startup {
 		 * @param progressCB is a callback for progress notification
 		 */
 		createUserParams(
-			pass: string,
-			progressCB: (progress: number) => void
+			pass: string, progressCB: ProgressCB
 		): Promise<void>;
+
+		watchBoot(observer: BootProcessObserver): () => void;
 		
 	}
 	
@@ -104,8 +106,9 @@ declare namespace web3n.startup {
 		 * @param pass is a MailerId login password
 		 * @param progressCB is a callback for progress notification
 		 */
-		completeLoginAndLocalSetup(pass: string,
-			progressCB: (progress: number) => void): Promise<boolean>;
+		completeLoginAndLocalSetup(
+			pass: string, progressCB: ProgressCB
+		): Promise<boolean>;
 		
 		/**
 		 * This method initializes core to run from an existing on a disk storage.
@@ -115,9 +118,26 @@ declare namespace web3n.startup {
 		 * @param pass is user's password.
 		 * @param progressCB is a callback for progress notification
 		 */
-		useExistingStorage(address: string, pass: string,
-			progressCB: (progress: number) => void): Promise<boolean>;
+		useExistingStorage(
+			address: string, pass: string, progressCB: ProgressCB
+		): Promise<boolean>;
+
+		watchBoot(observer: BootProcessObserver): () => void;
 		
+	}
+
+	type ProgressCB = (progress: number) => void;
+	type BootProcessObserver = Observer<BootEvent>;
+	interface BootEvent {
+		coreApp?: string;
+		message: string;
+		isError?: true;
+		isWarning?: true;
+	}
+
+	interface W3N {
+		signIn: startup.SignInService;
+		signUp: startup.SignUpService;
 	}
 	
 }

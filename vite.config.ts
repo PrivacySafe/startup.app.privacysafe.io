@@ -3,10 +3,6 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 
-function _resolve(dir: string) {
-  return resolve(__dirname, dir);
-}
-
 // https://vitejs.dev/config/
 // @ts-ignore
 export default defineConfig(config => {
@@ -28,20 +24,34 @@ export default defineConfig(config => {
     };
   }
 
-  const build = {
-    outDir: 'app',
-  };
-
   return {
     server,
-    build,
+    build: {
+      // reference: https://rollupjs.org/configuration-options/
+      rollupOptions: {
+        input: {
+          main: resolve(__dirname, './index.html'),
+          'main-mobile': resolve(__dirname, './index-mobile.html')
+        },
+        output: [
+          {
+            name: 'main',
+            dir: 'app'
+          },
+          {
+            name: 'main-mobile',
+            dir: 'app',
+          }
+        ]
+      },
+    },
     define,
     plugins,
     optimizeDeps,
     resolve: {
       alias: {
         vue: 'vue/dist/vue.esm-bundler.js',
-        '@': _resolve('./src'),
+        '@': resolve(__dirname, './src')
       },
     },
   };

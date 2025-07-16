@@ -16,11 +16,7 @@
 -->
 
 <script lang="ts" setup>
-import { useBootEvents } from '@/store';
 import { RouterView } from 'vue-router';
-
-// getting store initiates it, and we want to do it sooner to capture all logs
-useBootEvents();
 
 </script>
 
@@ -33,27 +29,25 @@ useBootEvents();
 <style lang="scss" module>
 
 .card {
-  // background-color: var(--color-bg-block-primary-default);
-  // color: var(--color-text-block-primary-default);
-  margin: 0;
-  width: 380px;
-  height: 496px;
+  margin: var(--spacing-s);
+  top: 1em;
+  left: 0;
+  right: 0;
+  bottom: 1em;
   position: fixed;
-  top: calc(50% - 248px);
-  left: calc(50% - 190px);
-  border-radius: var(--spacing-m);
   overflow: hidden;
 }
 
 // conditional section has to be below unconditional one to override values
-@media screen and (max-width: 420px) and (max-height: 530px) {
+@media screen and (max-height: 530px) {
 
   .card {
+    margin: 0;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
-    border-radius: 0;
+    overflow: auto;
   }
 
 }

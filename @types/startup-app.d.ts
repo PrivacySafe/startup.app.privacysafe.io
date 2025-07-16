@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2016 3NSoft Inc.
+ Copyright (C) 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -16,7 +16,4 @@
 
 /// <reference path="./startup.d.ts" />
 
-declare var w3n: {
-	signUp: web3n.startup.SignUpService;
-	signIn: web3n.startup.SignInService;
-}
+declare var w3n: web3n.startup.W3N;
