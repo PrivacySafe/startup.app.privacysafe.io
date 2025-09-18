@@ -1,7 +1,7 @@
 {
 	"name": "PrivacySafe startup",
 	"appDomain": "startup.app.privacysafe.io",
-	"version": "0.8.14",
+	"version": "0.8.16",
 	"description": "Opens PrivacySafe platform for user and does signups.",
 	"icon": "logo.png",
 
@@ -9,6 +9,7 @@
 		"/index.html": {
 			"startedBy": "user",
 			"runtime": "web-gui",
+			"formFactor": [ "desktop", "tablet" ],
 			"windowOpts": {
 				"width": 380,
 				"minWidth": 380,
@@ -20,25 +21,26 @@
 
 		"/index-mobile.html": {
 			"startedBy": "user",
-			"runtime": "web-gui"
+			"runtime": "web-gui",
+			"formFactor": "phone"
 		}
 	},
 
 	"launchers": [
 		{
-		  "name": "PrivacySafe startup",
-		  "icon": "logo.png",
-		  "description": "Opens PrivacySafe platform for user and does signups.",
-		  "component": "/index.html",
-		  "formFactor": [ "desktop", "tablet" ]
+		"name": "PrivacySafe startup",
+			"icon": "logo.png",
+			"description": "Opens PrivacySafe platform for user and does signups.",
+			"component": "/index.html",
+			"formFactor": [ "desktop", "tablet" ]
 		},
 		{
-		  "name": "PrivacySafe startup",
-		  "icon": "logo.png",
-		  "description": "Opens PrivacySafe platform for user and does signups.",
-		  "component": "/index-mobile.html",
-		  "formFactor": "phone"
+			"name": "PrivacySafe startup",
+			"icon": "logo.png",
+			"description": "Opens PrivacySafe platform for user and does signups.",
+			"component": "/index-mobile.html",
+			"formFactor": "phone"
 		}
-	 ]
+	]
 
 }

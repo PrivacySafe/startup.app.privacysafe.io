@@ -89,6 +89,7 @@
   "signup.step.progress.txt": "Please wait a few moments while your account keys are generated, and server creates an account for you. Do not close this window.",
 
   "boot-screen.title.txt": "Opening PrivacySafe for",
+  "boot-screen.show-logs.btn.txt": "View system boot messages",
 
   "field.label.password": "Password",
   "placeholder.create_password": "Create Your Password",

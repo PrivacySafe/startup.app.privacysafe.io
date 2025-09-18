@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -16,13 +16,24 @@
 -->
 
 <script lang="ts" setup>
+import { Ui3nButton, Ui3nProgressLinear } from '@v1nt1248/3nclient-lib';
 import { useBootEvents, useLoggedInUserStore } from '@/store';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const loggedIn = useLoggedInUserStore();
 const user = computed(() => `${ loggedIn.userId }`);
 const { eventsLog } = storeToRefs(useBootEvents());
+
+const showLogs = ref(false);
+
+const NUM_OF_LOGS_ON_A_GOOD_DAY = 8;
+const progressPercent = computed(() => {
+  const indexOfError = eventsLog.value.findIndex(entry => !!entry.isError);
+  const startCountInd = indexOfError + 1;
+  const numOfLogs = eventsLog.value.length - startCountInd;
+  return Math.min(Math.floor(100/NUM_OF_LOGS_ON_A_GOOD_DAY * numOfLogs), 95);
+});
 
 </script>
 
@@ -33,7 +44,10 @@ const { eventsLog } = storeToRefs(useBootEvents());
     </h3>
     {{ user }}
 
-    <div :class="$style.logs">
+    <div
+      v-if="showLogs"
+      :class="$style.logs"
+    >
       <p
         v-for="log in eventsLog"
         :class="(log.isError ? $style.errorLog : (log.isWarning ? $style.warningLog : $style.okLog))"
@@ -45,6 +59,23 @@ const { eventsLog } = storeToRefs(useBootEvents());
         <br v-if="!!log.coreApp">
         {{ log.message }}
       </p>
+    </div>
+    <div
+      v-else
+      :class="$style.progress"
+    >
+      <ui3n-progress-linear
+        height="5"
+        with-text
+        :value="progressPercent"
+      />
+
+      <ui3n-button
+        type="tertiary"
+        @click="showLogs = true"
+      >
+        {{  $tr('boot-screen.show-logs.btn.txt')  }}
+      </ui3n-button>
     </div>
 
   </div>
@@ -87,6 +118,10 @@ const { eventsLog } = storeToRefs(useBootEvents());
   color: white;
   font-style: italic;
   font-size: small;
+}
+
+.progress {
+  margin-top: vat(--spacing-m);
 }
 
 </style>
