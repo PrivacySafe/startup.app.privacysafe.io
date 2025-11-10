@@ -25,10 +25,13 @@ defineProps<{
   totalSteps: number;
 }>();
 
-const checks = ref([false, false, false]);
+const checks = ref([false, false, false, false]);
 const allChecked = computed(() => checks.value.reduce((a, b) => (a && b)));
 
 const checkboxText = [
+  [
+    'signup.step.acknowledgments.txt.check0.p'
+  ],
   [
     'signup.step.acknowledgments.txt.check1.p1',
     {
@@ -72,7 +75,7 @@ const checkboxText = [
 
     <ui3n-checkbox
       :class=$style.option
-      v-for="ind in [0, 1, 2]"
+      v-for="ind in [0, 1, 2, 3]"
       v-model=checks[ind]
     >
       <template v-for="txtSegment in checkboxText[ind]">
@@ -81,7 +84,7 @@ const checkboxText = [
         </span>
         <ui3n-tooltip v-else
           :content="$tr(txtSegment.tip)"
-          :placement="(ind === 2) ? 'top-start' : 'top-end'"
+          :placement="(ind === 3) ? 'top-start' : 'top-end'"
           trigger="hover"
           :class=$style.tooltip
         >

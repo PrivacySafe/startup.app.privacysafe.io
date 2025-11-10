@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -55,6 +55,7 @@ function next() {
 <template>
   <card
     :title="$tr('signup.title')"
+    :back-path="(currentStep === 1) ? '/signin' : undefined"
   >
     <div :class=$style.main>
       <ui3n-step-line-bar

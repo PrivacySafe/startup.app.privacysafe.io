@@ -314,7 +314,7 @@ async function startNewLogin() {
       <ui3n-button
         type="custom"
         block
-        @click="router.push('/signup/select-provider')"
+        @click="router.push('/signup/step/1')"
         color="var(--color-bg-button-tritery-default)"
         text-color="var(--color-text-button-tritery-default)"
         :disabled=signInProcessIsON

@@ -36,7 +36,7 @@ const signupState = useSignupStore();
 signupState.password = '';
 signupState.keyGenerationProc = undefined;
 
-const isCustomService = signupState.customSrvUrlWasSet;
+const isCustomService = !signupState.isStandardService;
 
 const password = ref('');
 const {

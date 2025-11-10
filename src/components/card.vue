@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -19,10 +19,19 @@
 import { router } from '@/router';
 import { Ui3nButton } from '@v1nt1248/3nclient-lib';
 
-defineProps<{
+const props = defineProps<{
   title: string;
-  hideBackBtn?: boolean
+  hideBackBtn?: boolean;
+  backPath?: string;
 }>();
+
+function goBack() {
+  if (props.backPath) {
+    router.push(props.backPath);
+  } else {
+    router.back();
+  }
+}
 
 </script>
 
@@ -38,7 +47,7 @@ defineProps<{
         icon-size="24"
         :class=$style.back_btn
         v-if=!hideBackBtn
-        @click=router.back()
+        @click=goBack
       />
       <div :class=$style.title>
         {{ title }}

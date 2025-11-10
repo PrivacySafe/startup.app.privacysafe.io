@@ -30,7 +30,7 @@ onMounted(() => watch(signupState,
   () => {
     if (signupState.keyGenerationProc === undefined) {
       console.error(`Key generation process wasn't started, or has failed`);
-      router.push('/signup/select-provider');
+      router.push('/signup/step/1');
     } else if (signupState.keyGenerationProc === true) {
       statusMsg.value = 'Keys generated.';
       createAccountOnServer();

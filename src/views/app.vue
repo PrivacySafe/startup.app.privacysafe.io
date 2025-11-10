@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -16,11 +16,32 @@
 -->
 
 <script lang="ts" setup>
-import { useBootEvents } from '@/store';
+import { router } from '@/router';
+import { useBootEvents, useSignupStore } from '@/store';
+import { signupParamsFromCurrentURL } from '@/utils/signup-links';
+import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
 
 // getting store initiates it, and we want to do it sooner to capture all logs
 useBootEvents();
+
+const signupState = useSignupStore();
+const signupParams = signupParamsFromCurrentURL();
+
+console.log(`@app.vue -> signupParams`, signupParams);
+
+onMounted(async () => {
+  if (signupParams
+  && (await signupState.checkSignupParamsAndSetDomains(signupParams))) {
+
+    console.log(`@app.vue -> signupState.availableDomains[0]`, signupState.availableDomains[0]);
+
+    router.push('/signup/step/1')
+    .then(() => router.push('/signup/step/2'));
+  } else {
+    await signupState.initStandard();
+  }
+});
 
 </script>
 

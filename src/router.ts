@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2024 3NSoft Inc.
+ Copyright (C) 2024 - 2025 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -11,7 +11,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import SignIn from '@/views/sign-in.vue';
 import SelectProvider from '@/views/signup/select-provider.vue';
-import CustomProvider from '@/views/signup/custom-provider.vue';
 import UsernameEntry from '@/views/signup/username-entry.vue';
 import PasswordEntry from '@/views/signup/password-entry.vue';
 import Acknowledgments from '@/views/signup/acknowledgments.vue';
@@ -23,38 +22,24 @@ const routes: RouteRecordRaw[] = [
 
   { path: '/signin', component: SignIn },
 
-  { path: '/signup/select-provider', component: SelectProvider },
-
-  { path: '/signup/custom-provider/1', component: CustomProvider },
   {
-    path: '/signup/custom-provider/2',
+    path: '/signup/step/1',
+    component: SelectProvider,
+    props: { currentStep: 1, totalSteps: 4 }
+  },
+  {
+    path: '/signup/step/2',
     component: UsernameEntry,
     props: { currentStep: 2, totalSteps: 4 }
   },
   {
-    path: '/signup/custom-provider/3',
+    path: '/signup/step/3',
     component: PasswordEntry,
     props: { currentStep: 3, totalSteps: 4 }
   },
-  {
-    path: '/signup/custom-provider/4',
+  { path: '/signup/step/4',
     component: Acknowledgments,
     props: { currentStep: 4, totalSteps: 4 }
-  },
-
-  {
-    path: '/signup/privacysafe-provider/1',
-    component: UsernameEntry,
-    props: { currentStep: 1, totalSteps: 3 }
-  },
-  {
-    path: '/signup/privacysafe-provider/2',
-    component: PasswordEntry,
-    props: { currentStep: 2, totalSteps: 3 }
-  },
-  { path: '/signup/privacysafe-provider/3',
-    component: Acknowledgments,
-    props: { currentStep: 3, totalSteps: 3 }
   },
 
   { path: '/signup/progress', component: SignUpProgress },

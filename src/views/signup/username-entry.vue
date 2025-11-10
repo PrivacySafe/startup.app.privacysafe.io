@@ -25,6 +25,7 @@ import { areAddressesEqual } from '@/utils/canonical-address';
 import { findIndexOfFirstDisallowedCharIn } from '@/utils/validations';
 import { strictASCiiForUsername } from '@/utils/unicode-ranges';
 import { useInputState } from './useInputState';
+import { router } from '@/router';
 
 defineProps<{
   currentStep: number;
@@ -49,18 +50,14 @@ function selectDomain(domain: string) {
   );
 }
 
-const isCustomService = signupState.customSrvUrlWasSet;
-
-const defaultSignupURL = 'https://signup.privacysafe.me/';
+const isCustomService = !signupState.isStandardService;
 
 onMounted(async () => {
-  if (signupState.availableDomains.length === 0) {
-    if (signupState.customSrvUrlWasSet) {
-      await w3n.signUp.setSignUpServer(defaultSignupURL);
-    }
-    signupState.availableDomains = await w3n.signUp.getAvailableDomains();
+  if (signupState.availableDomains.length > 0) {
+    selectDomain(signupState.availableDomains[0]);
+  } else {
+    router.push('/signup/step/1');
   }
-  selectDomain(signupState.availableDomains[0]);
 });
 
 const username = ref(signupState.username);

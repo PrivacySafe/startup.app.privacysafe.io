@@ -10,66 +10,119 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { defaultSignupURL, signupParamsToLink, SignupParamsViaURL } from './utils/signup-links';
 
 type BootEvent = web3n.startup.BootEvent;
+type HTTPException = web3n.HTTPException;
+type ConnectException = web3n.ConnectException;
 
-export interface SignupState {
-  username: string;
-  userDomain: string;
-  address: string;
-  password: string;
-  customSrvUrlWasSet: boolean;
-  customSrvUrl: string;
-  srvToken: string;
-  availableDomains: string[];
-  keyGenerationProc: undefined | number | true;
-}
+export const useSignupStore = defineStore('signup', () => {
 
-export const useSignupStore = defineStore('signup', {
+  const username = ref('');
+  const userDomain = ref('');
+  const address = ref('');
+  const password = ref('');
+  const isStandardService = ref(true);
+  const srvToken = ref('');
+  const availableDomains = ref<string[]>([]);
+  const keyGenerationProc = ref<undefined|number|true>(undefined);
+  const signupLink = ref('');
 
-  state: (): SignupState => ({
-    username: '',
-    userDomain: '',
-    address: '',
-    password: '',
-    customSrvUrlWasSet: false,
-    customSrvUrl: '',
-    srvToken: '',
-    availableDomains: [],
-    keyGenerationProc: undefined
-  }),
-
-  getters: {
-  },
-
-  actions: {
-
-    clear(): void {
-      this.username = '';
-      this.userDomain = '';
-      this.address = '';
-      this.password = '';
-      this.customSrvUrlWasSet = false;
-      this.customSrvUrl = '';
-      this.srvToken = '';
-      this.availableDomains = [];
-      this.keyGenerationProc = undefined;
+  async function getDomainsFor(params: SignupParamsViaURL): Promise<{
+    domains?: string[];
+    errMsgLabel?: string;
+    okMsgLabel?: string;
+    labelParams?: Record<string, string>
+  }> {
+    const { signupUrl, token, isStandardService } = params;
+    if (isStandardService) {
+      await w3n.signUp.setSignUpServer(defaultSignupURL);
+    } else {
+      await w3n.signUp.setSignUpServer(signupUrl);
     }
-
+    try {
+      const domains = await w3n.signUp.getAvailableDomains(token);
+      if (domains.length > 0) {
+        return {
+          domains,
+          okMsgLabel: (token ?
+            'signup.choice.status.have_domains_with_token' :
+            'signup.choice.status.have_domains_without_token'
+          )
+        };
+      } else {
+        return {
+          errMsgLabel: (token ?
+            'signup.choice.status.no_domains_with_token' :
+            'signup.choice.status.no_domains_without_token'
+          )
+        };
+      }
+    } catch (exc) {
+      if ((exc as HTTPException).type === 'http-request') {
+        return {
+          errMsgLabel: 'signup.choice.err.non_ok_status',
+          labelParams: { status: `${(exc as HTTPException).status}` }
+        };
+      } else if ((exc as ConnectException).type === 'http-connect') {
+        return {
+          errMsgLabel: 'signup.choice.err.no_connect',
+        };
+      } else {
+        return {
+          errMsgLabel: 'signup.choice.err.general',
+        };
+      }
+    }
   }
 
+  async function checkSignupParamsAndSetDomains(params: SignupParamsViaURL): Promise<boolean> {
+    const { domains } = await getDomainsFor(params);
+    if (domains) {
+      const { isStandardService: isStdSrv, token } = params;
+      srvToken.value = token ?? '';
+      isStandardService.value = !!isStdSrv;
+      availableDomains.value = domains;
+      signupLink.value = signupParamsToLink(params);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async function initStandard(): Promise<void> {
+    isStandardService.value = true;
+    signupLink.value = '';
+    srvToken.value = '';
+    const { domains } = await getDomainsFor({ signupUrl: '', isStandardService: true, token: undefined });
+    console.log(`@store.initStandard(), domains are`, domains);
+    availableDomains.value = domains ?? [];
+  }
+
+  return {
+    username,
+    userDomain,
+    address,
+    password,
+    isStandardService,
+    srvToken,
+    availableDomains,
+    keyGenerationProc,
+    signupLink,
+
+    initStandard,
+    checkSignupParamsAndSetDomains,
+    getDomainsFor
+  };
 });
 
-export interface LoggedInUser {
-  userId: string;
-}
+export const useLoggedInUserStore = defineStore('loggedInUser', () => {
 
-export const useLoggedInUserStore = defineStore('loggedInUser', {
+  const userId = ref('');
 
-  state: (): LoggedInUser => ({
-    userId: ''
-  }),
-
+  return {
+    userId
+  };
 });
 
 export const useBootEvents = defineStore('bootEvents', () => {
