@@ -95,7 +95,6 @@ export const useSignupStore = defineStore('signup', () => {
     signupLink.value = '';
     srvToken.value = '';
     const { domains } = await getDomainsFor({ signupUrl: '', isStandardService: true, token: undefined });
-    console.log(`@store.initStandard(), domains are`, domains);
     availableDomains.value = domains ?? [];
   }
 

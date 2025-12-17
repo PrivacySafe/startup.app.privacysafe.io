@@ -17,14 +17,15 @@
 
 <script lang="ts" setup>
 import SignupStep from '@/components/signup-step.vue';
-import { Ui3nButton, Ui3nInput, Ui3nInputProps } from '@v1nt1248/3nclient-lib';
+import { Ui3nInput, Ui3nInputProps } from '@v1nt1248/3nclient-lib';
 import { useSignupStore } from '@/store';
-import { computed, inject, onMounted, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { I18N_KEY, I18nPlugin } from '@v1nt1248/3nclient-lib/plugins';
 import { SingleProc, sleep } from '@v1nt1248/3nclient-lib/utils';
-import { parse3NWebURL, stdSignupLink } from '@/utils/signup-links';
+import { parse3NWebURL, SignupParamsViaURL, stdSignupLink } from '@/utils/signup-links';
+import { router } from '@/router';
 
-defineProps<{
+const props = defineProps<{
   currentStep: number;
   totalSteps: number;
 }>();
@@ -83,29 +84,97 @@ function inputEvent() {
     } else {
       return;
     }
-    const params = parse3NWebURL(
-      (valueToCheck === '') ? stdSignupLink : valueToCheck
-    );
-    if (params) {
-      const { token, isStandardService } = params;
-      const { domains, errMsgLabel, labelParams, okMsgLabel } = await signupState.getDomainsFor(params);
+    for (const { hook, url } of Object.values(stagingProviderSites)) {
+      if (valueToCheck === hook) {
+        return await openProviderSite(url);
+      }
+    }
+    await processSignupTokenOrURL(valueToCheck);
+  });
+}
 
-      if (domains) {
-        console.log(`domains are`, domains);
-        signupState.signupLink = valueToCheck;
-        signupState.isStandardService = !!isStandardService;
-        signupState.srvToken = token ?? '';
-        signupState.availableDomains = domains;
-        setOKView(okMsgLabel!, labelParams);
-      } else {
-        console.log(`no domains`);
-        setErredView(errMsgLabel!, labelParams);
+async function processSignupTokenOrURL(valueToCheck: string, moveToNextOnOK = false) {
+  let params: SignupParamsViaURL|undefined = undefined;
+  if (valueToCheck === '') {
+    params = parse3NWebURL(stdSignupLink);
+  } else if (valueToCheck.includes('/')) {
+    params = parse3NWebURL(valueToCheck);
+  } else {
+    params = parse3NWebURL(stdSignupLink+valueToCheck);
+  }
+  if (params) {
+    const { token, isStandardService } = params;
+    const { domains, errMsgLabel, labelParams, okMsgLabel } = await signupState.getDomainsFor(params);
+
+    if (domains) {
+      signupState.signupLink = valueToCheck;
+      signupState.isStandardService = !!isStandardService;
+      signupState.srvToken = token ?? '';
+      signupState.availableDomains = domains;
+      setOKView(okMsgLabel!, labelParams);
+      if (moveToNextOnOK) {
+        let path = location.pathname;
+        path = `${path.substring(0, path.length-1)}${props.currentStep+1}`;
+        router.push({ path });
       }
     } else {
-      console.log(`no params`);
-      setErredView('', undefined);
+      setErredView(errMsgLabel!, labelParams);
     }
-  });
+  } else {
+    setErredView('', undefined);
+  }
+}
+
+const stagingProviderSites = [
+  {
+    hook: `staging-site-1`,
+    url: `https://download.privacysafe.app/`
+  },
+  {
+    hook: `staging-site-2`,
+    url: `https://ivycyber.com/shop/`
+  },
+  {
+    hook: `staging-site-unknown-path`,
+    url: `https://download.privacysafe.app/wrong/path/`
+  },
+  {
+    hook: `staging-site-wrong-host`,
+    url: `https://download.privacysafe.app:404/`
+  },
+  {
+    hook: `staging-site-unknown-host`,
+    url: `https://unknown-host.privacysafe.app/`
+  }
+];
+
+async function openProviderSite(url: string) {
+  try {
+    await w3n.provider.openSiteInChildWindow(url)
+    .catch(err => {
+      console.error(`opening site erred`, err);
+      throw err;
+    });
+    console.log(`window with ${url} should be opened`);
+
+    console.log(`waiting for token ...`);
+    const token = await w3n.provider.getSignupToken()
+    .catch(err => {
+      console.error(`waiting for token erred`, err);
+      throw err;
+    });
+    console.log(`token:`, token);
+
+    signupLink.value = token;
+    await processSignupTokenOrURL(token, true);
+
+  } catch (err) {
+    console.log(`Wiping signupLink entry`);
+    signupLink.value = '';
+    inputEvent();
+  } finally {
+    w3n.provider.closeSite();
+  }
 }
 
 </script>

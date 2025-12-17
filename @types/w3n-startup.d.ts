@@ -12,9 +12,25 @@
  See the GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License along with
- this program. If not, see <http://www.gnu.org/licenses/>. */
+ this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
-/// <reference path="./startup.d.ts" />
-/// <reference path="./w3n-startup.d.ts" />
+declare namespace web3n.caps.startup {
 
-declare var w3n: web3n.caps.startup.W3N;
+	interface DefaultProviderSite {
+		openSiteInChildWindow: (url: string) => Promise<void>;
+		closeSite: () => Promise<void>;
+		getSignupToken: () => Promise<string>;
+	}
+
+	interface ViewBounds {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	}
+
+	interface W3N extends web3n.startup.W3N {
+		provider: DefaultProviderSite;
+	}
+}

@@ -16,7 +16,7 @@
 -->
 
 <script lang="ts" setup>
-import { inject, onMounted, ref } from 'vue';
+import { computed, inject, onMounted, ref } from 'vue';
 import SignupStep from '@/components/signup-step.vue';
 import { Ui3nInput, Ui3nMenu, Ui3nIcon, Ui3nTooltip } from '@v1nt1248/3nclient-lib';
 import { useSignupStore } from '@/store';
@@ -38,6 +38,7 @@ const signupState = useSignupStore();
 
 const domainOptions = ref<string[]>([]);
 const selectedDomain = ref('');
+const showDomainsMenu = computed(() => (signupState.availableDomains.length > 1));
 function selectDomain(domain: string) {
   const ind = signupState.availableDomains.indexOf(domain);
   selectedDomain.value = domain;
@@ -202,7 +203,7 @@ function validateUsernameDuringInput() {
         {{ $tr('signup.step.user_domain') }}
       </span>
       <ui3n-menu :class=$style.menu
-        v-if="(domainOptions.length > 1)"
+        v-if="showDomainsMenu"
       >
         <div :class=$style.selectedDomain>
           {{ selectedDomain }}
