@@ -18,7 +18,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import SignupStep from '@/components/signup-step.vue';
-import { Ui3nCheckbox, Ui3nTooltip } from '@v1nt1248/3nclient-lib';
+import { Ui3nCheckbox, Ui3nTooltip, Ui3nTooltipPlacement } from '@v1nt1248/3nclient-lib';
 
 defineProps<{
   currentStep: number;
@@ -36,7 +36,8 @@ const checkboxText = [
     'signup.step.acknowledgments.txt.check1.p1',
     {
       txt: 'signup.step.acknowledgments.txt.check1.p2',
-      tip: 'signup.step.acknowledgments.txt.check1.p2.tip'
+      tip: 'signup.step.acknowledgments.txt.check1.p2.tip',
+      tipPlacement: 'top' as Ui3nTooltipPlacement
     },
     'signup.step.acknowledgments.txt.check1.p3'
   ],
@@ -44,7 +45,8 @@ const checkboxText = [
     'signup.step.acknowledgments.txt.check2.p1',
     {
       txt: 'signup.step.acknowledgments.txt.check2.p2',
-      tip: 'signup.step.acknowledgments.txt.check2.p2.tip'
+      tip: 'signup.step.acknowledgments.txt.check2.p2.tip',
+      tipPlacement: 'top' as Ui3nTooltipPlacement
     },
     'signup.step.acknowledgments.txt.check2.p3'
   ],
@@ -52,7 +54,8 @@ const checkboxText = [
     'signup.step.acknowledgments.txt.check3.p1',
     {
       txt: 'signup.step.acknowledgments.txt.check3.p2',
-      tip: 'signup.step.acknowledgments.txt.check3.p2.tip'
+      tip: 'signup.step.acknowledgments.txt.check3.p2.tip',
+      tipPlacement: 'top-end' as Ui3nTooltipPlacement
     },
     'signup.step.acknowledgments.txt.check3.p3'
   ]
@@ -84,7 +87,7 @@ const checkboxText = [
         </span>
         <ui3n-tooltip v-else
           :content="$tr(txtSegment.tip)"
-          :placement="(ind === 3) ? 'top-start' : 'top-end'"
+          :placement="txtSegment.tipPlacement"
           trigger="hover"
           :class=$style.tooltip
         >

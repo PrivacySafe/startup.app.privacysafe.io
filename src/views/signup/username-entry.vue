@@ -187,14 +187,7 @@ function validateUsernameDuringInput() {
           {{ $tr('signup.step.create_user.txt.p2') }}
         </ui3n-tooltip>
         <span>{{ $tr('signup.step.create_user.txt.p3') }}</span>
-        <ui3n-tooltip :class=$style.tooltip
-          :content="$tr('signup.step.create_user.txt.p4.tip')"
-          placement="top-end"
-          trigger="hover"
-        >
-          {{ $tr('signup.step.create_user.txt.p4') }}
-        </ui3n-tooltip>
-        <span>{{ $tr('signup.step.create_user.txt.p5') }}</span>
+        <span>{{ $tr('signup.step.create_user.txt.p4') }}</span>
       </template>
     </div>
 
