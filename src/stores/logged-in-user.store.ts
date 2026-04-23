@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2025 3NSoft Inc.
+ Copyright (C) 2026 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -14,28 +14,29 @@
  You should have received a copy of the GNU General Public License along with
  this program. If not, see <http://www.gnu.org/licenses/>.
 */
+import { ref } from 'vue';
+import { defineStore } from 'pinia';
 
-import { UnicodeRanges } from "./unicode-ranges";
+export const useLoggedInUserStore = defineStore('loggedInUser', () => {
+  const userId = ref('');
+  const usersOnDisk = ref<string[]>([]);
 
-export function isCharAllowed(
-  char: string, allowedRanges: UnicodeRanges
-): boolean {
-  const code = char.charCodeAt(0);
-  for (const { first, last } of allowedRanges) {
-    if ((first <= code) && (code <= last)) {
-      return true;
+  function setUserId(value: string) {
+    userId.value = value;
+  }
+
+  async function loadUsersFromDisk() {
+    try {
+      usersOnDisk.value = await w3n.signIn.getUsersOnDisk();
+    } catch (exc) {
+      console.error(exc);
     }
   }
-  return false;
-}
 
-export function findIndexOfFirstDisallowedCharIn(
-  str: string, allowedRanges: UnicodeRanges
-): number {
-  for (let i=0; i<str.length; i+=1) {
-    if (!isCharAllowed(str[i], allowedRanges)) {
-      return i;
-    }
-  }
-  return -1;
-}
+  return {
+    userId,
+    usersOnDisk,
+    setUserId,
+    loadUsersFromDisk,
+  };
+});

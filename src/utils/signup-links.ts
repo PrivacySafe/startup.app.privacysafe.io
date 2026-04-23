@@ -7,18 +7,15 @@
 
  You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-
-export const defaultSignupURL = 'https://signup.privacysafe.me/';
-export const stdSignupLink = `w3n://privacysafe/signup/`;
-export const customSignupLink = `w3n://signup/`;
+import { defaultSignupURL, stdSignupLink, customSignupLink } from '@/constants';
 
 export interface SignupParamsViaURL {
-	signupUrl: string;
-	isStandardService?: true;
-	token: string|undefined;
+  signupUrl: string;
+  isStandardService?: true;
+  token: string | undefined;
 }
 
-export function signupParamsFromCurrentURL(): SignupParamsViaURL|undefined {
+export function signupParamsFromCurrentURL(): SignupParamsViaURL | undefined {
   const h = location.hash;
   if (h) {
     try {
@@ -29,22 +26,22 @@ export function signupParamsFromCurrentURL(): SignupParamsViaURL|undefined {
   }
 }
 
-export function parse3NWebURL(urlStr: string): SignupParamsViaURL|undefined {
+export function parse3NWebURL(urlStr: string): SignupParamsViaURL | undefined {
   const indOfLastSlash = urlStr.lastIndexOf('/');
   if (indOfLastSlash < 0) {
     return;
   }
-  const token = urlStr.substring(indOfLastSlash+1);
+  const token = urlStr.substring(indOfLastSlash + 1);
   if (urlStr.startsWith(customSignupLink)) {
     return {
-      signupUrl: (new URL(`https://${urlStr.substring(customSignupLink.length, indOfLastSlash+1)}`)).href,
-      token
+      signupUrl: new URL(`https://${urlStr.substring(customSignupLink.length, indOfLastSlash + 1)}`).href,
+      token,
     };
   } else if (urlStr.startsWith(stdSignupLink)) {
     return {
       signupUrl: defaultSignupURL,
       isStandardService: true,
-      token
+      token,
     };
   }
 }
@@ -52,7 +49,7 @@ export function parse3NWebURL(urlStr: string): SignupParamsViaURL|undefined {
 export function signupParamsToLink(params: SignupParamsViaURL): string {
   const { isStandardService, signupUrl, token } = params;
   if (isStandardService) {
-    return (token ? `${stdSignupLink}${token}` : '');
+    return token ? `${stdSignupLink}${token}` : '';
   } else {
     return `${customSignupLink}${signupUrl.substring(8)}${token ? token : ''}`;
   }
