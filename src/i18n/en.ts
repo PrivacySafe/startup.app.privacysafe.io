@@ -18,43 +18,30 @@
 export const en = {
   signin: {
     title: 'Sign In',
-    // welcome: 'Welcome, {username}',
-    // opt: {
-    //   other_login: 'Other Login',
-    // },
     btn: {
-      // sign_in: 'Sign In',
-      enter: 'Enter',
+      login: 'Log In',
       entering: 'Entering ... {percent}%',
-      make_account: 'Create New Account',
+      make_account: 'Create Account',
+      or: 'OR'
     },
     make_account: {
       txt: `Don't have an account? Create one!`,
     },
-  },
-
-  field: {
-    label: {
-      login: 'Login',
-      // custom_srv_url: 'Custom Service URL',
-      // opt_token: 'Optional Signup Token',
-      // username: 'Login',
-      password: 'Password',
-      confirm_password: 'Confirm Password',
+    footer: {
+      like_it: "Like what we do?",
+      support_us: "Support Us"
     },
   },
 
   placeholder: {
-    login: `Enter your Login e.g. user{'@'}privacysafe.me`,
-    enter_password: 'Enter your Password',
-    // custom_srv_url: 'Example: www.supersafe.online',
-    // username: 'Enter Desired Username',
-    create_password: 'Create Your Password',
-    confirm_password: 'Repeat Your Password',
+    username: `Username`,
+    enter_password: 'Password',
+    create_password: 'Password',
+    confirm_password: 'Confirm Password',
   },
 
   signup: {
-    title: 'Create New Account',
+    title: 'Create Username',
     choice: {
       // title: 'Select Provider',
       // txt: 'Continue with our PrivacySafe Service, or enter a link from your own service provider below.',
@@ -91,23 +78,19 @@ export const en = {
         next: 'Next',
       },
       create_user: {
-        // text: 'Create Username',
+        username_length_txt: 'Username should be 6 upto 60 characters long.',
+        username_chars_txt: 'Use latin letters, numbers and some characters: - (hyphen), . (dot) or _ (underscore).',
         txt: 'Username should be 6 upto 60 characters. You can use letters, numbers and some characters: - (hyphen), . (dot) or _ (underscore). You can use characters from any language.',
         domain_label: 'Register to domain',
-        login_placeholder: 'Enter your Login e.g. alex',
         status: {
-          // username_too_short: 'Username {username} is too short.',
-          // username_too_long: 'Username {username} is too long.',
-          // invalid_char: 'Character {char} is not allowed.',
-          // addr_available: 'Address {address} is available.',
           addr_not_available: 'Address {address} is not available.',
         },
       },
       // user_domain: 'Register to Domain:',
       create_password: {
-        label: 'Create Password',
-        txt1: 'Your login password must be at least 12 characters.  You can use letters, numbers and some characters: ',
-        txt2: 'You can use characters from any language.',
+        pass_length_txt: 'Password should be at least 12 characters long.',
+        pass_chars_txt: 'Use only latin letters, numbers and some characters: ',
+        confirmation_txt: 'Passwords should match.',
         // status: {
         //   invalid_char: 'Character {char} is not allowed.',
         //   password_too_short: 'Password is too short',
@@ -115,30 +98,27 @@ export const en = {
         // },
       },
       acknowledgments: {
-        label: 'Important Acknowledgment',
+        title: 'Important Acknowledgment',
         txt: {
           intro: 'Please read and acknowledge if you agree with followings:',
           check1: {
             p1: 'I confirm that I am 18 years of age or older.',
           },
           check2: {
-            p1: 'I understand that it is ',
-            p2: 'impossible to recover. ',
+            p1: 'I understand that it is impossible to recover lost password.',
           },
           check3: {
-            p1: 'I will keep a secure copy. We recommend you keep a non-digital copy, such as paper or etched metal, in a secure place.',
+            p1: 'I will keep a secure copy of my password. For example, keep a non-digital copy, such as paper or etched metal, in a secure place.',
           },
           check4: {
             p1: 'I understand it is good practice to store my credentials in a secure place or share them with a trustee.',
           },
         },
-        // btn: 'I Understand & Agree',
         btn: 'Create Account',
       },
       progress: {
-        title: 'Privacy Key',
-        txt: 'Please wait a few moments while your account keys are generated, and server creates an account for you. Do not close this window.',
-        txt1: 'Key is generation ... {value}%',
+        txt: 'Preparing Your Secure Zone...',
+        key_generation_txt: 'Preparing Your Key...',
       },
     },
     provider: {
@@ -154,28 +134,18 @@ export const en = {
         title: 'Platinum',
         info: '{domain} identity',
       },
-      // hackers: {
-      //   title: 'Hackers',
-      //   info: 'Host Your Own',
-      // },
-      enter_label: {
-        part_1: 'Enter ',
-        part_2: 'Token or Sign Up Link',
-        part_3: ', if you have one',
+      custom_link: {
+        input_placeholder: 'Token or Sign Up Link',
+        footer_btn_part: 'Apply Token or Sign Up Link,',
+        footer_txt_part: 'if you have any',
       },
     },
-    // create_user: {
-    //   custom_provider: {
-    //     txt: 'Create Username',
-    //   },
-    // },
   },
 
   'boot-screen': {
-    title: {
-      txt: 'Opening PrivacySafe for',
-    },
+    txt: 'Preparing Your Secure Zone...',
     logs: {
+      summary: 'System boot messages:',
       btn_show: 'View system boot messages',
       btn_hide: 'Hide system boot messages',
     },

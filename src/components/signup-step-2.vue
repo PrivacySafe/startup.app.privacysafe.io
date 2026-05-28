@@ -15,23 +15,26 @@
  this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import { storeToRefs } from 'pinia';
-  import { Ui3nButton, Ui3nInput } from '@v1nt1248/3nclient-lib';
+  import { Ui3nButton, Ui3nInput, Ui3nInputProps, Ui3nProgressLinear } from '@v1nt1248/3nclient-lib';
   import { useSignupStore } from '@/stores/signup.store';
   import { areAddressesEqual } from '@/utils/canonical-address';
+import { isStringOk } from '@/utils/validations';
+import { strictASCiiForUsername } from '@/utils/unicode-ranges';
 
   const emits = defineEmits<{
     (event: 'change:step', payload: { step: number; query?: Record<string, string> }): void;
+    (event: 'change:step-title', payload: { title: string; }): void;
   }>();
 
   const { t } = useI18n();
   const route = useRoute();
 
   const signupStore = useSignupStore();
-  const { userDomain, srvToken } = storeToRefs(signupStore);
+  const { userDomain, srvToken, availableDomains } = storeToRefs(signupStore);
   const { setStoreFieldValue } = signupStore;
 
   if (route.query.token && !srvToken.value) {
@@ -42,78 +45,174 @@
     setStoreFieldValue('userDomain', route.query.domain as string);
   }
 
-  const usernameValidationRules = [
-    (v: unknown) => !!v || t('err.field_required'),
-    (v: unknown) => ((v as string).length >= 6 && (v as string).length <= 60) || t('err.login_length'),
-    (v: unknown) => /^[\p{L}\p{N}._-]+$/u.test(v as string) || t('err.login_characters'),
-  ];
+  function isNameShort(u: string): boolean {
+    return (u.length < 6);
+  }
+
+  function isNameLong(u: string): boolean {
+    return (u.length > 60);
+  }
+
+  function areCharsOkIn(u: string): boolean {
+    return isStringOk(u, strictASCiiForUsername);
+  }
 
   const username = ref('');
-  const externalUsernameError = ref('');
-  const isLoginValid = ref(false);
+  const inputState = ref<Ui3nInputProps['displayStateMode']>(undefined);
   const isProcessing = ref(false);
+  const showCharLimits = ref(false);
+  const isLatestValueAvailable = ref(false);
 
-  const isFormValid = computed(() => isLoginValid.value && !externalUsernameError.value);
+  function onUsernameChange() {
+    const newName = username.value;
+    isLatestValueAvailable.value = false;
+    if (inputState.value === 'success') {
+      inputState.value = undefined;
+    }
+    scheduledCheck.value = undefined;
+    if (areCharsOkIn(newName)) {
+      if (!isNameShort(newName)) {
+        if (isNameLong(newName)) {
+          setTimeout(() => {
+            username.value = newName.substring(0, newName.length-1);
+            onUsernameChange();
+          }, 1);
+        } else {
+          scheduleAvailabilityCheck(newName);
+        }
+      }
+    } else {
+      showCharLimits.value = true;
+      flashUsernameError();
+      setTimeout(() => {
+        let choppedName = newName;
+        do {
+          choppedName = ((choppedName.length > 2) ? choppedName.substring(0, choppedName.length-1) : '');
+        } while (!areCharsOkIn(choppedName));
+        username.value = choppedName;
+        onUsernameChange();
+      }, 1);
+      return;
+    }
 
-  function onUsernameUpdate() {
-    if (externalUsernameError.value) {
-      externalUsernameError.value = '';
+    updateStepTitle();
+  }
+
+  function updateStepTitle() {
+    const currentAddr = `${username.value}@${userDomain.value}`;
+    emits('change:step-title', { title: currentAddr });
+  }
+
+  function flashUsernameError() {
+    if (inputState.value !== 'error') {
+      inputState.value = 'error';
+      setTimeout(() => {
+        inputState.value = undefined;
+      }, 2000);
     }
   }
 
-  async function checkNewLoginAvailability() {
+  const scheduledCheck = ref<{
+    usernameToCheck: string;
+    timeoutId: number;
+  }|undefined>(undefined);
+
+  function scheduleAvailabilityCheck(username: string) {
+    if (scheduledCheck.value) {
+      const { usernameToCheck, timeoutId } = scheduledCheck.value;
+      if (usernameToCheck === username) {
+        return;
+      } else {
+        clearTimeout(timeoutId);
+      }
+    }
+    scheduledCheck.value = {
+      usernameToCheck: username,
+      timeoutId: setTimeout(performScheduledCheck, 400) as unknown as number
+    };
+  }
+
+  async function performScheduledCheck(): Promise<void> {
+    if (!scheduledCheck.value) {
+      return;
+    }
+    const { usernameToCheck } = scheduledCheck.value;
+    if (usernameToCheck !== username.value) {
+      return;
+    }
     try {
       isProcessing.value = true;
       const token = srvToken.value || undefined;
       const availableAddresses = await w3n.signUp.getAvailableAddresses(username.value, token);
-
-      const currentAddr = `${username.value}@${userDomain.value}`;
-      if (availableAddresses.find(addr => areAddressesEqual(addr, currentAddr))) {
-        setStoreFieldValue('username', username.value);
-        setStoreFieldValue('address', currentAddr);
-        emits('change:step', { step: 3 });
+      if ((usernameToCheck !== username.value)
+      || (scheduledCheck.value?.usernameToCheck !== usernameToCheck)) {
         return;
       } else {
-        externalUsernameError.value = t('signup.step.create_user.status.addr_not_available', {
-          address: currentAddr,
-        });
+        scheduledCheck.value = undefined;
+      }
+      const currentAddr = `${username.value}@${userDomain.value}`;      
+      if (availableAddresses.find(addr => areAddressesEqual(addr, currentAddr))) {
+        isLatestValueAvailable.value = true;
+        inputState.value = 'success';
       }
     } finally {
       isProcessing.value = false;
     }
   }
+
+  function useCurrentUsernameInNextStep() {
+    const currentAddr = `${username.value}@${userDomain.value}`;      
+    setStoreFieldValue('username', username.value);
+    setStoreFieldValue('address', currentAddr);
+    emits('change:step', { step: 3 });
+  }
+
+  updateStepTitle();
+
 </script>
 
 <template>
   <div :class="$style.step2">
     <div :class="$style.main">
-      <div :class="$style.text">
-        {{ t('signup.step.create_user.txt') }}
-      </div>
-
-      <div :class="$style.row">
-        <span :class="$style.rowLabel">{{ t('signup.step.create_user.domain_label') }}:</span>
-        <span :class="$style.rowValue">@{{ userDomain }}</span>
-      </div>
 
       <ui3n-input
         v-model="username"
-        :label="t('field.label.login')"
-        :placeholder="t('signup.step.create_user.login_placeholder')"
-        :rules="usernameValidationRules"
-        :display-state-mode="!!externalUsernameError ? 'error' : undefined"
-        :display-state-message="externalUsernameError"
-        :disabled="isProcessing"
-        @update:model-value="onUsernameUpdate"
-        @update:valid="isLoginValid = $event"
+        :placeholder="t('placeholder.username')"
+        :display-state-mode="inputState"
+        @update:model-value="onUsernameChange"
       />
+
+      <div :class="$style.progressLayout">
+        <ui3n-progress-linear indeterminate
+          v-if="!!scheduledCheck"
+          :color="'var(--signin-green)'"
+        />
+      </div>
+
+      <!-- <div :class="$style.row">
+        <span :class="$style.rowLabel">{{ t('signup.step.create_user.domain_label') }}:</span>
+        <span :class="$style.rowValue">@{{ userDomain }}</span>
+      </div> -->
+
+      <div :class="$style.text"
+        v-if="isNameShort(username)"
+      >
+        {{ t('signup.step.create_user.username_length_txt') }}
+      </div>
+
+      <div :class="[ $style.text, ((inputState === 'error') ? $style.errorFlash : '') ]"
+        v-if="showCharLimits"
+      >
+        {{ t('signup.step.create_user.username_chars_txt') }}
+      </div>
+
     </div>
 
     <ui3n-button
       block
-      :disabled="!isFormValid || isProcessing"
+      :disabled="!isLatestValueAvailable || isProcessing"
       :class="$style.nextBtn"
-      @click="checkNewLoginAvailability"
+      @click="useCurrentUsernameInNextStep"
     >
       {{ t('signup.step.btn.next') }}
     </ui3n-button>
@@ -133,16 +232,26 @@
     .main {
       position: relative;
       width: 100%;
-      height: 260px;
+      min-height: calc(var(--spacing-xxl)*2.75);
+      padding-top: var(--spacing-m);
       margin-bottom: var(--spacing-l);
     }
 
     .text {
       display: inline-block;
-      font-size: var(--font-13);
+      font-size: var(--font-14);
       font-weight: 400;
       line-height: 1.5;
-      margin-bottom: var(--spacing-ml);
+    }
+
+    .errorFlash {
+      color: var(--error-content-focused);
+    }
+
+    .progressLayout {
+      width: 100%;
+      min-height: var(--spacing-xs);
+      margin-bottom: var(--spacing-s);
     }
 
     .row {
@@ -168,10 +277,10 @@
 
     .nextBtn {
       height: var(--spacing-xl);
-      border-radius: var(--spacing-s);
+      border-radius: var(--spacing-xl);
 
       span {
-        font-size: var(--font-14);
+        font-size: var(--font-16);
       }
     }
   }

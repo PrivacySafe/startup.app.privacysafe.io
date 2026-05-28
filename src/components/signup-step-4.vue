@@ -21,9 +21,12 @@
 
   const emits = defineEmits<{
     (event: 'change:step', payload: { step: number; query?: Record<string, string> }): void;
+    (event: 'change:step-title', payload: { title: string; }): void;
   }>();
 
   const { t } = useI18n();
+
+  emits('change:step-title', { title: t('signup.step.acknowledgments.title') });
 
   const form = ref({
     v1: false,
@@ -47,20 +50,29 @@
           <ui3n-checkbox v-model="form.v1" />
           <span :class="$style.itemText">{{ t('signup.step.acknowledgments.txt.check1.p1') }}</span>
         </div>
+      </div>
 
+      <div :class="$style.row"
+        v-if="form.v1"
+      >
         <div :class="$style.item">
           <ui3n-checkbox v-model="form.v2" />
-          <span :class="$style.itemText">
-            {{ t('signup.step.acknowledgments.txt.check2.p1') }}
-            <span :class="$style.highlight">{{ t('signup.step.acknowledgments.txt.check2.p2') }}</span>
-          </span>
+          <span :class="$style.itemText">{{ t('signup.step.acknowledgments.txt.check2.p1') }}</span>
         </div>
+      </div>
 
+      <div :class="$style.row"
+        v-if="form.v2"
+      >
         <div :class="$style.item">
           <ui3n-checkbox v-model="form.v3" />
           <span :class="$style.itemText">{{ t('signup.step.acknowledgments.txt.check3.p1') }}</span>
         </div>
+      </div>
 
+      <div :class="$style.row"
+        v-if="form.v3"
+      >
         <div :class="$style.item">
           <ui3n-checkbox v-model="form.v4" />
           <span :class="$style.itemText">{{ t('signup.step.acknowledgments.txt.check4.p1') }}</span>
@@ -68,14 +80,12 @@
       </div>
     </div>
 
-    <ui3n-button
-      block
-      :disabled="!isFormValid"
-      :class="$style.createBtn"
+    <div :class="$style.createBtn"
+      v-if="isFormValid"
       @click="emits('change:step', { step: 5 })"
     >
       {{ t('signup.step.acknowledgments.btn') }}
-    </ui3n-button>
+    </div>
   </div>
 </template>
 
@@ -88,8 +98,6 @@
     .body {
       position: relative;
       width: 100%;
-      max-height: calc(100% - 56px);
-      height: 260px;
       margin-bottom: var(--spacing-m);
       display: flex;
       flex-direction: column;
@@ -99,7 +107,7 @@
 
       .text {
         display: inline-block;
-        font-size: var(--font-13);
+        font-size: var(--font-16);
         font-weight: 400;
         line-height: 1.5;
       }
@@ -121,9 +129,9 @@
           justify-content: flex-start;
           align-items: center;
           column-gap: var(--spacing-s);
-          font-size: var(--font-12);
+          font-size: var(--font-16);
           font-weight: 500;
-          line-height: var(--font-16);
+          line-height: var(--font-20);
           color: var(--color-text-control-primary-default);
 
           .itemText {
@@ -141,13 +149,22 @@
     }
 
     .createBtn {
-      min-height: var(--spacing-xl);
-      height: var(--spacing-xl);
-      border-radius: var(--spacing-s);
-
-      span {
-        font-size: var(--font-14);
+      position: relative;
+      width: 100%;
+      height: var(--spacing-xxl);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: var(--spacing-xxl);
+      font-size: var(--font-20);
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--signin-orange);
+      &:hover {
+        filter: brightness(1.1);
+        transition: 0.3s ease;
       }
     }
+
   }
 </style>

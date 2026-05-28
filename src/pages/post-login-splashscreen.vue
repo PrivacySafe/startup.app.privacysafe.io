@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2024 - 2025 3NSoft Inc.
+ Copyright (C) 2024 - 2026 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -19,9 +19,11 @@
   import { computed, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { storeToRefs } from 'pinia';
-  import { Ui3nProgressLinear } from '@v1nt1248/3nclient-lib';
+  import { Ui3nButton, Ui3nProgressLinear } from '@v1nt1248/3nclient-lib';
   import { useBootEventsStore } from '@/stores/boot-events.store';
   import { useLoggedInUserStore } from '@/stores/logged-in-user.store';
+  import prLogo from '@/assets/images/privacysafe-logo.svg';
+  import StartupFooter from '@/components/startup-footer.vue';
 
   const NUM_OF_LOGS_ON_A_GOOD_DAY = 8;
 
@@ -41,154 +43,122 @@
 </script>
 
 <template>
-  <div :class="$style.info">
-    <h3 :class="$style.title">
-      {{ t('boot-screen.title.txt') }}
-    </h3>
+  <section>
+    <div :class="$style.info">
 
-    <div :class="$style.user">
-      {{ user }}
-    </div>
-
-    <div :class="$style.progress">
-      <ui3n-progress-linear
-        height="5"
-        with-text
-        :value="progressPercent"
-      />
-    </div>
-
-    <details
-      v-if="eventsLog && Array.isArray(eventsLog) && eventsLog.length"
-      :class="$style.logs"
-    >
-      <summary @click="showLogs = !showLogs">
-        {{ showLogs ? t('boot-screen.logs.btn_hide') : t('boot-screen.logs.btn_show') }}
-      </summary>
-
-      <div :class="$style.logsContent">
-        <template
-          v-for="log in eventsLog"
-          :key="log.message"
-        >
-          <div
-            v-if="log.coreApp"
-            :class="[$style.log, log.isError ? $style.errorLog : log.isWarning ? $style.warningLog : $style.okLog]"
-          >
-            <span :class="$style.appName">{{ log.coreApp }}:</span>
-            <span>{{ log.message }}</span>
-          </div>
-        </template>
+      <div :class="$style.logoBlock">
+        <img
+          :src="prLogo"
+          alt="PrivacySafe logo"
+        />
       </div>
-    </details>
-  </div>
+
+      <div :class="$style.progress">
+        {{ `${progressPercent} %` }}
+        <br>
+        <ui3n-progress-linear
+          height="12"
+          :value="50"
+          :color="'var(--signin-green)'"
+        />
+      </div>
+
+      <div :class="$style.text">
+        {{ t('boot-screen.txt') }}
+        <br>
+        {{ user }}
+      </div>
+
+      <div
+        v-if="showLogs"
+        :class="$style.logs"
+      >
+        <div :class="$style.title">
+          {{ t('boot-screen.logs.summary') }}
+        </div>
+
+        <div :class="$style.logsContent">
+          <template
+            v-for="log in eventsLog"
+            :key="log.message"
+          >
+            <div
+              :class="[$style.log, log.isError ? $style.errorLog : log.isWarning ? $style.warningLog : $style.okLog]"
+            >
+              <span>{{ log.isError ? '❌' : log.isWarning ? '⚠️' : '✔️' }} </span>
+              <span :class="$style.appName" v-if="!!log.coreApp">{{ log.coreApp }}:<br></span>
+              <span>{{ log.message }}</span><br>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <startup-footer>
+      <div :class="$style.footer">
+        <span>🧾 </span>
+        <ui3n-button
+          :type="'tertiary'"
+          @click="showLogs = !showLogs"
+        >
+          {{ t(showLogs ? 'boot-screen.logs.btn_hide' : 'boot-screen.logs.btn_show') }}
+        </ui3n-button>
+      </div>
+    </startup-footer>
+
+  </section>
 </template>
 
 <style lang="scss" module>
   .info {
     position: relative;
-    height: 100%;
     width: 100%;
-    padding: var(--spacing-m);
+    min-height: calc(var(--spacing-xxl)*10);
+    padding-left: var(--spacing-m);
+    padding-right: var(--spacing-m);
 
-    .title {
-      font-size: var(--font-20);
-      font-weight: 500;
-      line-height: 1;
-      color: var(--color-text-block-primary-default);
-      text-align: center;
-      padding-top: var(--spacing-s);
-      margin-block-start: 0;
-      margin-block-end: var(--spacing-s);
+    .logoBlock {
+      width: 100%;
+      img {
+        width: 100%;
+      }
+      margin-top: calc(var(--spacing-xl) * 2);
     }
 
-    .user {
-      position: relative;
+    .text {
       width: 100%;
-      height: var(--spacing-m);
-      font-size: var(--font-13);
-      font-weight: 500;
-      line-height: var(--font-16);
-      color: var(--color-text-control-primary-default);
+      margin-top: var(--spacing-ml);
       text-align: center;
-      margin-bottom: var(--spacing-m);
+      font-size: var(--font-16);
+      font-weight: 600;
+      line-height: var(--font-32);
     }
 
     .progress {
-      margin-bottom: var(--spacing-m);
+      width: 100%;
+      margin-top: var(--spacing-m);
+      text-align: center;
+      color: var(--signin-green);
+      font-size: var(--font-16);
+      font-weight: 600;
+      line-height: var(--font-32);
     }
 
     .logs {
-      position: relative;
-      height: calc(100% - 116px);
-      border: 1px solid transparent;
-      overflow-y: auto;
+      margin-top: var(--spacing-m);
+      margin-bottom: calc(var(--spacing-xxl)*2);
 
-      summary {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        list-style: none;
-        display: flex;
-        height: var(--spacing-l);
-        justify-content: flex-start;
-        align-items: center;
-        column-gap: var(--spacing-s);
+      .title {
         font-size: var(--font-15);
         font-weight: 500;
-        background-color: var(--color-bg-block-primary-default);
         color: var(--color-text-control-accent-default);
-        cursor: pointer;
-
-        &::after {
-          content: '⏵';
-          font-size: var(--font-18);
-          line-height: 1;
-          color: var(--color-text-control-accent-default);
-        }
-
-        :hover {
-          color: var(--color-text-control-accent-hover);
-        }
-      }
-
-      &[open] {
-        summary::after {
-          content: '⏷';
-          font-size: var(--font-18);
-          line-height: 1;
-          color: var(--color-text-control-accent-default);
-        }
       }
 
       .logsContent {
-        font-size: var(--font-13);
-        line-height: 1.5;
-        border-bottom-left-radius: var(--spacing-s);
-        border-bottom-right-radius: var(--spacing-s);
-        border-left: var(--color-border-block-primary-default);
-        border-right: var(--color-border-block-primary-default);
-        border-bottom: var(--color-border-block-primary-default);
         padding: var(--spacing-s);
 
         .log {
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          align-items: flex-start;
-          row-gap: var(--spacing-xs);
-
-          &.errorLog {
-            color: var(--error-content-default);
-          }
-
-          &.warningLog {
-            color: var(--warning-content-default);
-          }
-
-          &.okLog {
-            color: var(--info-content-default);
-          }
+          margin-bottom: var(--spacing-s);
 
           .appName {
             font-size: var(--font-12);
@@ -199,4 +169,14 @@
       }
     }
   }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    span {
+      padding-right: var(--spacing-xs);
+    }
+  }
+
 </style>

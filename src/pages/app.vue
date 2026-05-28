@@ -16,7 +16,6 @@
 -->
 <script lang="ts" setup>
   import { onBeforeMount } from 'vue';
-  import prLogo from '@/assets/images/privacysafe-logo.svg';
   import { useLoggedInUserStore } from '@/stores/logged-in-user.store';
   import { useSignupStore } from '@/stores/signup.store';
   import { useBootEventsStore } from '@/stores/boot-events.store';
@@ -37,13 +36,6 @@
 
 <template>
   <section :class="$style.app">
-    <div :class="$style.header">
-      <img
-        :src="prLogo"
-        alt="logo"
-        :class="$style.appLogo"
-      />
-    </div>
 
     <div :class="$style.body">
       <router-view v-slot="{ Component }">
@@ -53,34 +45,22 @@
       </router-view>
     </div>
   </section>
+
 </template>
 
 <style lang="scss" module>
   .app {
-    --app-header-height: 64px;
-
     position: fixed;
     inset: 0;
     background-color: var(--color-bg-block-primary-default);
     color: var(--color-text-block-primary-default);
   }
 
-  .header {
-    display: flex;
-    width: 100%;
-    height: var(--app-header-height);
-    justify-content: center;
-    align-items: center;
-    padding-top: 4px;
-  }
-
-  .appLogo {
-    height: 32px;
-  }
-
   .body {
-    position: relative;
+    position: fixed;
     width: 100%;
-    height: calc(100% - var(--app-header-height));
+    height: 100%;
+    overflow: hidden auto;
   }
+
 </style>

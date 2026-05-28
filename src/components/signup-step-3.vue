@@ -19,125 +19,96 @@
   import { useI18n } from 'vue-i18n';
   import { useSignupStore } from '@/stores/signup.store';
   import { Ui3nButton, Ui3nInput } from '@v1nt1248/3nclient-lib';
+import { isStringOk } from '@/utils/validations';
+import { strictASCiiForPassword } from '@/utils/unicode-ranges';
 
   const validPasswordSymbols = '! # * $ % & ( ) + - : ; ? . @ ^ _ ~ ';
 
   const emits = defineEmits<{
     (event: 'change:step', payload: { step: number; query?: Record<string, string> }): void;
+    (event: 'change:step-title', payload: { title: string; }): void;
   }>();
 
   const { t } = useI18n();
-  const { setStoreFieldValue } = useSignupStore();
+  const { setStoreFieldValue, address } = useSignupStore();
+  emits('change:step-title', { title: address });
 
-  const form = ref({
-    password: {
-      txt: '',
-      isTouched: false,
-      errorMessage: '',
-    },
-    confirmation: {
-      txt: '',
-      isTouched: false,
-      errorMessage: '',
-    },
+  const password = ref({
+    txt: '',
+    badCharErr: false,
   });
 
-  const isFormValid = computed(() => !form.value.password.errorMessage && !form.value.confirmation.errorMessage);
+  const confirmation = ref('');
 
-  const passwordValidationRules = [
-    (v: string) => !!v || t('err.field_required'),
-    (v: string) => /^[\p{L}\d!#*$%&()+\-:;?.@^_~]+$/u.test(v) || t('err.password_characters'),
-    (v: string) => v.trim().length >= 12 || t('err.password_length'),
-  ];
-
-  const confirmationValidationRules = [(v: string) => v === form.value.password.txt || t('err.confirmation_err')];
-
-  function validate(field: 'password' | 'confirmation', value: string): void {
-    form.value[field].errorMessage = '';
-    const rules = field === 'password' ? passwordValidationRules : confirmationValidationRules;
-    for (const rule of rules) {
-      const res = rule(value);
-      if (typeof res === 'string') {
-        form.value[field].errorMessage += res;
-      }
-    }
+  function onPasswordChange() {
+    confirmation.value = '';
+    password.value.badCharErr = !isStringOk(password.value.txt, strictASCiiForPassword);
   }
 
-  function onFieldUpdate(field: 'password' | 'confirmation', value: string): void {
-    if (!form.value[field].isTouched) {
-      form.value[field].isTouched = true;
-    }
+  const isShortPassword = computed(() => (password.value.txt.length < 12));
 
-    validate(field, value);
-  }
+  const isPasswordOk = computed(() => (!isShortPassword.value && !password.value.badCharErr));
 
-  function confirmPassword() {
+  const isFormValid = computed(() => isPasswordOk.value && (password.value.txt === confirmation.value));
+
+  function usePasswordInNextStep() {
     if (!isFormValid.value) {
       return;
     }
-
-    setStoreFieldValue('password', form.value.password.txt);
+    setStoreFieldValue('password', password.value.txt);
     emits('change:step', { step: 4 });
   }
+
 </script>
 
 <template>
   <div :class="$style.step3">
     <div :class="$style.main">
-      <div :class="$style.text">
-        <span>{{ t('signup.step.create_password.txt1') }}</span>
-        <span :class="$style.highlight">{{ validPasswordSymbols }}</span>
-        <br />
-        <span>{{ t('signup.step.create_password.txt2') }}</span>
+
+      <ui3n-input
+        v-model="password.txt"
+        type="password"
+        :placeholder="t('placeholder.create_password')"
+        :display-state-mode="
+          password.badCharErr ? 'error'
+            : isShortPassword ? undefined : 'success'
+        "
+        :class="$style.password"
+        @update:model-value="onPasswordChange"
+      />
+
+      <div :class="$style.text"
+        v-if="isShortPassword"
+      >
+        <span>{{ t('signup.step.create_password.pass_length_txt') }}</span>
+      </div>
+
+      <div :class="$style.text"
+        v-if="password.badCharErr"
+      >
+        <span>{{ t('signup.step.create_password.pass_chars_txt') }} {{ validPasswordSymbols }}</span>
       </div>
 
       <ui3n-input
-        v-model="form.password.txt"
+        v-if="isPasswordOk"
+        v-model="confirmation"
         type="password"
-        :label="t('field.label.password')"
-        :placeholder="t('placeholder.create_password')"
-        :display-state-mode="
-          form.password.isTouched && form.password.errorMessage
-            ? 'error'
-            : form.password.isTouched
-              ? 'success'
-              : undefined
-        "
-        :display-state-message="
-          form.password.isTouched && form.password.errorMessage ? form.password.errorMessage : undefined
-        "
-        display-state-with-icon
-        :class="$style.password"
-        @update:model-value="ev => onFieldUpdate('password', ev)"
+        :placeholder="t('placeholder.confirm_password')"
+        :display-state-mode="isFormValid ? 'success' : undefined"
       />
 
-      <ui3n-input
-        v-model="form.confirmation.txt"
-        type="password"
-        :label="t('field.label.confirm_password')"
-        :placeholder="t('placeholder.confirm_password')"
-        :display-state-mode="
-          form.confirmation.isTouched && form.confirmation.errorMessage
-            ? 'error'
-            : form.confirmation.isTouched
-              ? 'success'
-              : undefined
-        "
-        :display-state-message="
-          form.confirmation.isTouched && form.confirmation.errorMessage
-            ? form.confirmation.errorMessage
-            : undefined
-        "
-        display-state-with-icon
-        @update:model-value="ev => onFieldUpdate('confirmation', ev)"
-      />
+      <div :class="$style.text"
+        v-if="isPasswordOk && !isFormValid"
+      >
+        <span>{{ t('signup.step.create_password.confirmation_txt') }}</span>
+      </div>
     </div>
 
     <ui3n-button
       block
       :disabled="!isFormValid"
       :class="$style.nextBtn"
-      @click="confirmPassword"
+      @click="usePasswordInNextStep"
     >
       {{ t('signup.step.btn.next') }}
     </ui3n-button>
@@ -157,20 +128,16 @@
     .main {
       position: relative;
       width: 100%;
-      height: 260px;
+      min-height: calc(var(--spacing-xxl)*2.75);
+      padding-top: var(--spacing-m);
       margin-bottom: var(--spacing-l);
     }
 
     .text {
       display: inline-block;
-      font-size: var(--font-13);
+      font-size: var(--font-14);
       font-weight: 400;
       line-height: 1.5;
-      margin-bottom: var(--spacing-ml);
-
-      .highlight {
-        color: var(--color-text-block-accent-default);
-      }
     }
 
     .password {
@@ -179,10 +146,10 @@
 
     .nextBtn {
       height: var(--spacing-xl);
-      border-radius: var(--spacing-s);
+      border-radius: var(--spacing-xl);
 
       span {
-        font-size: var(--font-14);
+        font-size: var(--font-16);
       }
     }
   }

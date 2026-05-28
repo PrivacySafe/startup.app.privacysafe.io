@@ -1,6 +1,6 @@
 {
   "name": "privacysafe-startup-app",
-  "version": "0.9.11",
+  "version": "0.9.20",
   "description": "PrivacySafe platform startup app",
   "author": "3NSoft, Inc.",
   "license": "GPL-3.0",
@@ -19,7 +19,7 @@
     "test:watch": "pnpm run clean:coverage && jest --watch"
   },
   "dependencies": {
-    "@v1nt1248/3nclient-lib": "0.3.9",
+    "@v1nt1248/3nclient-lib": "0.3.19",
     "pinia": "3.0.4",
     "punycode": "2.3.1",
     "vue": "3.5.32",

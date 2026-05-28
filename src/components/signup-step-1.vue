@@ -18,10 +18,11 @@
   import { inject, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { NOTIFICATIONS_KEY } from '@v1nt1248/3nclient-lib/plugins';
-  import { Ui3nInput, Ui3nRipple as vUi3nRipple } from '@v1nt1248/3nclient-lib';
+  import { Ui3nButton, Ui3nInput, Ui3nRipple as vUi3nRipple } from '@v1nt1248/3nclient-lib';
   import { useSignupStore } from '@/stores/signup.store';
   import { stdSignupLink, tokens } from '@/constants';
   import { parse3NWebURL, type SignupParamsViaURL } from '@/utils/signup-links';
+  import StartupFooter from './startup-footer.vue';
 
   const emits = defineEmits<{
     (event: 'change:step', payload: { step: number; query?: Record<string, string> }): void;
@@ -31,6 +32,7 @@
   const { $createNotice } = inject(NOTIFICATIONS_KEY)!;
   const { getDomainsFor, setStoreFieldValue } = useSignupStore();
 
+  const customLinkEntryOpened = ref(false)
   const customTokenOrLink = ref('');
   const isProcessing = ref(false);
 
@@ -55,10 +57,6 @@
           setStoreFieldValue('availableDomains', domains);
           setStoreFieldValue('userDomain', tokens[key].domain);
 
-          $createNotice({
-            type: 'success',
-            content: okMsgLabel!,
-          });
           emits('change:step', {
             step: 2,
             query: {
@@ -78,43 +76,57 @@
       isProcessing.value = false;
     }
   }
+
 </script>
 
 <template>
   <div :class="$style.step1">
-    <div :class="$style.main">
-      <div :class="$style.row">
-        <template
-          v-for="(token, key) in tokens"
-          :key="key"
+    <div :class="$style.row">
+      <template
+        v-for="(token, key) in tokens"
+        :key="key"
+      >
+        <div
+          v-ui3n-ripple
+          :class="[$style.provider, isProcessing && $style.disabled, $style[`${key}-provider`]]"
+          @click="() => selectProvider(key)"
         >
-          <div
-            v-ui3n-ripple
-            :class="[$style.provider, isProcessing && $style.disabled, $style[`${key}-provider`]]"
-            @click="() => selectProvider(key)"
-          >
-            <span :class="$style.providerTitle">{{ t(`signup.provider.${key}.title`) }}</span>
-            <span :class="$style.providerInfo">{{
-              t(`signup.provider.${key}.info`, { domain: `@${token.domain}` })
-            }}</span>
-          </div>
-        </template>
+          <span :class="$style.providerTitle">{{ t(`signup.provider.${key}.title`) }}</span>
+          <span :class="$style.providerInfo">{{
+            t(`signup.provider.${key}.info`, { domain: `@${token.domain}` })
+          }}</span>
+        </div>
+      </template>
+    </div>
+
+    <startup-footer>
+
+      <div
+        v-if="customLinkEntryOpened"
+        :class="$style.footerInput"
+      >
+
+        <ui3n-input
+          v-model="customTokenOrLink"
+          :disabled="isProcessing"
+          :placeholder="t('signup.provider.custom_link.input_placeholder')"
+        />
       </div>
-    </div>
 
-    <div :class="[$style.row, $style.input]">
-      <span :class="$style.rowLabel">
-        <span>{{ t('signup.provider.enter_label.part_1') }}</span>
-        <span :class="$style.highlight">{{ t('signup.provider.enter_label.part_2') }}</span>
-        <span>{{ t('signup.provider.enter_label.part_3') }}</span>
-      </span>
+      <div
+        v-else
+        :class="$style.footer"
+      >
+        <ui3n-button
+          :type="'tertiary'"
+          @click="customLinkEntryOpened = true"
+        >
+          {{ t('signup.provider.custom_link.footer_btn_part') }}
+        </ui3n-button>
+        <span>{{ t('signup.provider.custom_link.footer_txt_part') }}</span>
+      </div>
 
-      <ui3n-input
-        v-model="customTokenOrLink"
-        hide-bottom-space
-        :disabled="isProcessing"
-      />
-    </div>
+    </startup-footer>
   </div>
 </template>
 
@@ -123,10 +135,7 @@
     position: relative;
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+    padding-top: var(--spacing-l);
   }
 
   .row {
@@ -136,35 +145,15 @@
     justify-content: center;
     align-items: center;
     gap: var(--spacing-m);
-
-    &.input {
-      row-gap: var(--spacing-xs);
-    }
-
-    .rowLabel {
-      text-align: center;
-      font-size: var(--font-12);
-      font-weight: 500;
-      line-height: 1;
-      padding-bottom: 2px;
-
-      .highlight {
-        color: var(--color-text-block-accent-default);
-      }
-    }
-  }
-
-  .main {
-    position: relative;
-    width: 100%;
-    height: 260px;
-    margin-bottom: var(--spacing-l);
+    padding-left: var(--spacing-l);
+    padding-right: var(--spacing-l);
   }
 
   .provider {
     position: relative;
-    width: 46%;
-    aspect-ratio: 5 / 2;
+    width: 70%;
+    min-width: 12em;
+    aspect-ratio: 5 / 2.2;
     padding: var(--spacing-xs);
     overflow: hidden;
     border-radius: 12px;
@@ -174,43 +163,43 @@
     align-items: center;
     row-gap: var(--spacing-s);
     border: 1.5px solid color-mix(in oklch, var(--default-fill-default), transparent 80%);
-    color: var(--white-100);
+    // color: var(--white-100);
     text-shadow: 0 1px 2px oklch(0% 0 0 / 0.4);
     line-height: 1;
     cursor: pointer;
     transition: 0.3s ease;
 
     .providerTitle {
-      font-size: var(--font-15);
+      font-size: var(--font-24);
       font-weight: 600;
     }
 
     .providerInfo {
-      font-size: var(--font-10);
+      font-size: var(--font-14);
       font-weight: 400;
     }
 
     &.silver-provider {
       background: linear-gradient(135deg, oklch(78% 0.07 260) 0%, oklch(50% 0.06 260) 100%);
       box-shadow:
-        0 0 10px oklch(65% 0.08 260 / 0.6),
-        0 0 20px oklch(65% 0.08 260 / 0.3),
+        0 0 6px oklch(65% 0.08 260 / 0.6),
+        0 0 12px oklch(65% 0.08 260 / 0.3),
         inset 0 1px 1px oklch(100% 0 0 / 0.6);
     }
 
     &.gold-provider {
       background: linear-gradient(135deg, oklch(82% 0.17 80) 0%, oklch(55% 0.16 80) 100%);
       box-shadow:
-        0 0 10px oklch(70% 0.18 80 / 0.7),
-        0 0 20px oklch(70% 0.18 80 / 0.4),
+        0 0 6px oklch(70% 0.18 80 / 0.7),
+        0 0 12px oklch(70% 0.18 80 / 0.4),
         inset 0 1px 1px oklch(100% 0 0 / 0.5);
     }
 
     &.platinum-provider {
       background: linear-gradient(135deg, oklch(85% 0.02 250) 0%, oklch(60% 0.03 250) 100%);
       box-shadow:
-        0 0 12px oklch(80% 0.03 250 / 0.8),
-        0 0 24px oklch(80% 0.03 250 / 0.4),
+        0 0 6px oklch(80% 0.03 250 / 0.8),
+        0 0 12px oklch(80% 0.03 250 / 0.4),
         inset 0 1px 1px oklch(100% 0 0 / 0.8);
       text-shadow: 0 1px 3px oklch(0% 0 0 / 0.5);
     }
@@ -226,4 +215,21 @@
       cursor: default;
     }
   }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: var(--spacing-m);
+    padding-right: var(--spacing-m);
+    text-align: center;
+  }
+
+  .footerInput {
+    width: 100%;
+    padding-left: var(--spacing-m);
+    padding-right: var(--spacing-m);
+    padding-top: var(--spacing-s);
+  }
+
 </style>

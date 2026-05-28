@@ -31,8 +31,11 @@
   const router = useRouter();
 
   const step = ref((route.query.step as string) ? Number(route.query.step) : 1);
+  const stepTitleTxt = ref('');
 
   function changeStep(payload: { step: number; query?: Record<string, string> }) {
+    stepTitleTxt.value = '';
+
     if (payload.step === 0) {
       return router.push({ name: APP_ROUTES.SIGNIN });
     }
@@ -45,6 +48,11 @@
       },
     });
   }
+
+  function setStepTitleTxt(payload: { title: string; }) {
+    stepTitleTxt.value = payload.title;
+  }
+
 </script>
 
 <template>
@@ -53,8 +61,7 @@
 
     <template v-else>
       <h3 :class="$style.title">
-        {{ t('signup.title') }}
-
+        {{ stepTitleTxt }}
         <ui3n-button
           type="icon"
           size="small"
@@ -76,16 +83,19 @@
         <signup-step2
           v-if="step === 2"
           @change:step="changeStep"
+          @change:step-title="setStepTitleTxt"
         />
 
         <signup-step3
           v-if="step === 3"
           @change:step="changeStep"
+          @change:step-title="setStepTitleTxt"
         />
 
         <signup-step4
           v-if="step === 4"
           @change:step="changeStep"
+          @change:step-title="setStepTitleTxt"
         />
       </div>
     </template>
@@ -110,12 +120,16 @@
       margin-block-start: 0;
       margin-block-end: var(--spacing-ml);
 
+      padding-left: var(--spacing-ml);
+
       .backBtn {
         position: absolute;
         top: 0;
         left: 0;
         z-index: 1;
       }
+
+      margin-bottom: var(--spacing-xl);
     }
 
     .stepLine {

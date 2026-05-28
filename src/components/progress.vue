@@ -20,10 +20,12 @@
   import { useRouter } from 'vue-router';
   import { storeToRefs } from 'pinia';
   import { NOTIFICATIONS_KEY } from '@v1nt1248/3nclient-lib/plugins';
-  import { Ui3nIcon } from '@v1nt1248/3nclient-lib';
+  import { Ui3nProgressLinear } from '@v1nt1248/3nclient-lib';
   import { useSignupStore } from '@/stores/signup.store';
   import { useLoggedInUserStore } from '@/stores/logged-in-user.store';
   import { APP_ROUTES } from '@/constants';
+  import prLogo from '@/assets/images/privacysafe-logo.svg';
+  import StartupFooter from '@/components/startup-footer.vue';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -40,6 +42,8 @@
   async function createAccountOnServer() {
     try {
       const token = srvToken.value || undefined;
+
+      console.warn(`skipping creation of account in debug process`);
       const added = await w3n.signUp.addUser(address.value, token);
       if (added) {
         setUserId(address.value);
@@ -70,91 +74,108 @@
     setStoreFieldValue('keyGenerationProc', 0);
 
     w3n.signUp
-      .createUserParams(password.value, p => {
-        setStoreFieldValue('keyGenerationProc', p);
-      })
-      .then(() => createAccountOnServer())
-      .catch(err => {
-        console.error(err);
-        setStoreFieldValue('keyGenerationProc', undefined);
-        isProcessing.value = false;
-        $createNotice({
-          type: 'error',
-          content: t('err.singup_general_err'),
-          duration: 0,
-        });
+    .createUserParams(password.value, p => {
+      setStoreFieldValue('keyGenerationProc', p);
+    })
+    .then(async () => {
+      setStoreFieldValue('keyGenerationProc', undefined);
+      await createAccountOnServer();
+    })
+    .catch(err => {
+      console.error(err);
+      setStoreFieldValue('keyGenerationProc', undefined);
+      isProcessing.value = false;
+      $createNotice({
+        type: 'error',
+        content: t('err.singup_general_err'),
+        duration: 0,
       });
+    });
   });
 </script>
 
 <template>
-  <div :class="$style.progressPage">
-    <h3 :class="$style.title">
-      {{ t('signup.step.progress.title') }}
-    </h3>
+  <section>
+    <div :class="$style.progressPage">
 
-    <div :class="$style.text">
-      {{ t('signup.step.progress.txt') }}
-    </div>
+      <div :class="$style.logoBlock">
+        <img
+          :src="prLogo"
+          alt="PrivacySafe logo"
+        />
+      </div>
 
-    <div :class="$style.row">
-      <ui3n-icon
-        v-if="isProcessing"
-        icon="spinner"
-        size="64"
-        color="var(--color-border-control-accent-default)"
-      />
-    </div>
-
-    <div :class="$style.row">
-      <span
+      <div :class="$style.progress"
         v-if="keyGenerationProc !== undefined"
-        :class="$style.progress"
       >
-        {{ t('signup.step.progress.txt1', { value: keyGenerationProc }) }}
-      </span>
+        {{ `${keyGenerationProc} %` }}
+        <br>
+        <ui3n-progress-linear
+          height="16"
+          :value="keyGenerationProc"
+          :color="'var(--signin-green)'"
+        />
+      </div>
+
+      <div :class="$style.progress"
+        v-else
+      >
+        {{ ' ' }}
+        <br>
+        <ui3n-progress-linear indeterminate
+          height="16"
+          :color="'var(--signin-green)'"
+        />
+      </div>
+
+      <div :class="$style.text">
+        {{ t((keyGenerationProc !== undefined) ? 'signup.step.progress.key_generation_txt' : 'signup.step.progress.txt') }}
+        <br>
+        {{ address }}
+      </div>
+
     </div>
-  </div>
+
+    <startup-footer>
+      <div :class="$style.footer">
+        <span> </span>
+      </div>
+    </startup-footer>
+  </section>
 </template>
 
 <style lang="scss" module>
   .progressPage {
     position: relative;
     width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
+    min-height: calc(var(--spacing-xxl)*10);
+    padding-left: var(--spacing-s);
+    padding-right: var(--spacing-s);
 
-    .title {
-      font-size: var(--font-20);
-      font-weight: 500;
-      line-height: 1;
-      color: var(--color-text-block-primary-default);
-      text-align: center;
-      margin-block-start: 0;
-      margin-block-end: var(--spacing-ml);
+    .logoBlock {
+      width: 100%;
+      img {
+        width: calc(100% - var(--spacing-s));
+      }
+      margin-top: calc(var(--spacing-xl) * 2 - var(--spacing-m));
     }
+
+    font-size: var(--font-16);
+    font-weight: 600;
+    line-height: var(--font-32);
 
     .text {
-      font-size: var(--font-12);
-      font-weight: 400;
-      line-height: var(--font-18);
-      color: var(--color-text-block-primary-default);
-    }
-
-    .row {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      width: 100%;
+      margin-top: var(--spacing-ml);
+      text-align: center;
     }
 
     .progress {
-      font-size: var(--font-16);
-      font-weight: 600;
-      line-height: var(--font-32);
-      color: var(--color-text-control-accent-default);
+      width: 100%;
+      margin-top: var(--spacing-m);
+      text-align: center;
+      color: var(--signin-green);
     }
+
   }
 </style>

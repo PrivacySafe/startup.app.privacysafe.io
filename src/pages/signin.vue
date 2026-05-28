@@ -25,6 +25,8 @@
   import { APP_ROUTES } from '@/constants';
   import { areAddressesEqual, UserIdParseException } from '@/utils/canonical-address';
   import LoginSelector from '@/components/login-selector.vue';
+  import prLogo from '@/assets/images/privacysafe-logo.svg';
+  import StartupFooter from '@/components/startup-footer.vue';
 
   const { t } = useI18n();
   const { $createNotice } = inject<NotificationsPlugin>(NOTIFICATIONS_KEY)!;
@@ -163,16 +165,20 @@
 
 <template>
   <section :class="$style.signin">
+
+    <div :class="$style.logoBlock">
+      <img
+        :src="prLogo"
+        alt="PrivacySafe logo"
+      />
+    </div>
+
     <div :class="$style.inputBlock">
-      <h3 :class="$style.title">
-        {{ t('signin.title') }}
-      </h3>
 
       <div :class="$style.row">
         <login-selector
           v-model="form.login.field"
-          :label="t('field.label.login')"
-          :placeholder="t('placeholder.login')"
+          :placeholder="t('placeholder.username')"
           :items="usersOnDisk"
           :display-state-mode="form.login.isTouched && form.login.errorMessage ? 'error' : undefined"
           :display-state-message="
@@ -189,7 +195,6 @@
         <ui3n-input
           v-model="form.password.field"
           :type="doesPasswordShow ? 'text' : 'password'"
-          :label="t('field.label.password')"
           :placeholder="t('placeholder.enter_password')"
           :display-state-mode="form.password.isTouched && form.password.errorMessage ? 'error' : undefined"
           :display-state-message="
@@ -210,34 +215,54 @@
           @click.stop.prevent="doesPasswordShow = !doesPasswordShow"
         />
       </div>
+    </div>
 
+    <div :class="$style.btnsBlock">
       <div :class="$style.row">
-        <ui3n-button
-          block
-          :disabled="!isFormValid || signInProgress !== null"
+        <div
+          :class="[
+            $style.bigBtnLayout, $style.siginInBtn,
+            (!!isFormValid && !signInProgress) ? $style.siginInBtnEnabled : ''
+            ]"
           @click="signIn"
         >
           {{
-            signInProgress === null ? t('signin.btn.enter') : t('signin.btn.entering', { percent: signInProgress })
+            signInProgress === null ? t('signin.btn.login') : t('signin.btn.entering', { percent: signInProgress })
           }}
+        </div>
+      </div>
+
+      <div :class="$style.textInLine">
+        <hr/>
+        <span>{{ t('signin.btn.or') }}</span>
+        <hr/>
+      </div>
+
+      <div :class="$style.row">
+
+        <div
+          v-ui3n-ripple
+          :class="[ $style.bigBtnLayout, $style.createAccountBtn ]"
+          @click="createNewAccount"
+        >
+          {{ t('signin.btn.make_account') }}
+        </div>
+      </div>
+
+    </div>
+
+    <startup-footer>
+      <div :class="$style.footer">
+        <span :class="$style.heart">♥</span>
+        <span>{{ t('signin.footer.like_it') }}</span>
+        <ui3n-button
+          :type="'tertiary'"
+        >
+          {{ t('signin.footer.support_us') }}
         </ui3n-button>
       </div>
-    </div>
+    </startup-footer>
 
-    <div :class="$style.row">
-      <span :class="$style.info">
-        {{ t('signin.make_account.txt') }}
-      </span>
-
-      <div
-        v-ui3n-ripple
-        :class="$style.createBtn"
-        @click="createNewAccount"
-      >
-        <span>✨</span>
-        <span>{{ t('signin.btn.make_account') }}</span>
-      </div>
-    </div>
   </section>
 </template>
 
@@ -247,122 +272,110 @@
   .signin {
     position: relative;
     width: 100%;
-    height: 100%;
-    padding: var(--spacing-m) var(--spacing-m) var(--spacing-xxl) var(--spacing-m);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
+    min-height: calc(var(--spacing-xxl)*10);
+    padding-left: var(--spacing-ml);
+    padding-right: var(--spacing-ml);
+  }
+
+  .logoBlock {
+    padding-left: var(--spacing-xs);
+    padding-right: var(--spacing-xs);
+    width: 100%;
+    img {
+      width: 100%;
+    }
+    margin-top: calc(var(--spacing-xl) * 2);
   }
 
   .inputBlock {
-    margin-bottom: var(--spacing-l);
+    margin-top: var(--spacing-xl);
   }
 
-  .title {
-    font-size: var(--font-20);
-    font-weight: 500;
-    line-height: 1;
-    color: var(--color-text-block-primary-default);
-    text-align: center;
-    margin-block-start: 0;
-    margin-block-end: 48px;
+  .btnsBlock {
+    margin-top: var(--spacing-xl);
   }
 
   .row {
     position: relative;
     width: 100%;
-    margin-bottom: var(--spacing-s);
 
     .showPasswordBtn {
+      --btn-size: 28px;
       position: absolute;
-      max-width: 28px !important;
-      width: 28px !important;
-      min-width: 28px !important;
-      max-height: 28px;
-      top: 22px;
-      right: 2px;
+      max-width: var(--btn-size) !important;
+      width: var(--btn-size) !important;
+      min-width: var(--btn-size) !important;
+      max-height: var(--btn-size) !important;
+      top: var(--spacing-xs);
+      right: var(--spacing-xs);
       z-index: 1;
     }
   }
 
-  .password {
-    input {
-      padding-right: var(--spacing-l);
-    }
-  }
-
-  .label {
-    display: block;
-    position: relative;
-    font-size: var(--font-12);
-    font-weight: 600;
-    line-height: var(--font-16);
-    color: var(--color-text-control-primary-default);
-    margin-bottom: var(--spacing-xs);
-  }
-
-  .item {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: max-content;
-  }
-
-  .itemName {
-    font-size: var(--font-14);
-    line-height: var(--font-16);
-    font-weight: 500;
-    color: var(--color-text-control-primary-default);
-    @include mixins.text-overflow-ellipsis();
-  }
-
-  .info {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-    font-size: var(--font-13);
-    font-weight: 400;
-    line-height: var(--font-16);
-    color: var(--color-text-block-secondary-default);
-    margin-bottom: var(--spacing-s);
-  }
-
-  .createBtn {
-    --start-bg-color: oklch(from var(--default-fill-default) calc(100% - l) c h);
-
+  .bigBtnLayout {
     position: relative;
     width: 100%;
-    height: 40px;
+    height: var(--spacing-xxl);
     display: flex;
     justify-content: center;
     align-items: center;
-    column-gap: var(--spacing-xs);
-    border-radius: 12px;
-    color: var(--color-text-button-primary-default);
-    text-shadow: 0 1px 3px var(--shadow-far);
-    font-size: var(--font-15);
-    font-weight: 600;
-    line-height: 1;
+    border-radius: var(--spacing-xxl);
+    font-size: var(--font-20);
+    font-weight: 500;
+  }
+
+  .siginInBtn {
+    border-style: solid;
+    border-width: 2px;
+    border-color: var(--signin-green);
+  }
+
+  .siginInBtnEnabled {
     cursor: pointer;
+    &:hover {
+      filter: brightness(1.1);
+      transition: 0.3s ease;
+      background: var(--signin-green);
+    }
+  }
 
-    border: 1.5px solid color-mix(in oklch, var(--default-fill-default), transparent 80%);
-    background: linear-gradient(
-      130deg,
-      var(--color-text-button-primary-default) 0%,
-      var(--color-bg-button-primary-default) 35% 65%,
-      var(--color-text-button-primary-default) 100%
-    );
-    box-shadow:
-      0 0 12px color-mix(in oklch, var(--color-bg-button-primary-default) 80%, transparent),
-      0 0 24px color-mix(in oklch, var(--color-bg-button-primary-default) 40%, transparent),
-      inset 0 1px 1px var(--shadow-far);
-
-    transition: 0.3s ease;
-
+  .createAccountBtn {
+    cursor: pointer;
+    background: var(--signin-orange);
     &:hover {
       filter: brightness(1.1);
       transition: 0.3s ease;
     }
   }
+
+  .textInLine {
+    width: 100%;
+    margin-top: calc(var(--spacing-m) * 0.75);
+    margin-bottom: calc(var(--spacing-m) * 0.75);
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    font-size: var(--font-10);
+    font-weight: 600;
+    color: var(--signin-gray);
+    hr {
+      display: inline-block;
+      width: calc(50% - 24px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    span {
+      padding-right: var(--spacing-xs);
+    }
+    .heart {
+      font-size: var(--font-24);
+    }
+  }
+
 </style>
