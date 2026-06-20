@@ -22,14 +22,14 @@ export const en = {
       login: 'Log In',
       entering: 'Entering ... {percent}%',
       make_account: 'Create Account',
-      or: 'OR'
+      or: 'OR',
     },
     make_account: {
       txt: `Don't have an account? Create one!`,
     },
     footer: {
-      like_it: "Like what we do?",
-      support_us: "Support Us"
+      like_it: 'Like what we do?',
+      support_us: 'Support Us',
     },
   },
 
@@ -40,21 +40,14 @@ export const en = {
     confirm_password: 'Confirm Password',
   },
 
+  autologin: {
+    on: 'Auto-Login ON',
+    off: 'Auto-Login OFF',
+  },
+
   signup: {
     title: 'Create Username',
     choice: {
-      // title: 'Select Provider',
-      // txt: 'Continue with our PrivacySafe Service, or enter a link from your own service provider below.',
-      // btn: {
-      //   custom_provider: 'Continue with Custom Service',
-      //   privacysafe_std: 'Continue with PrivacySafe Service',
-      //   privacysafe_token: 'Special Service from PrivacySafe',
-      //   not_available: ' ',
-      // },
-      // label: {
-      //   singup_link: 'Enter Token or Sign Up Link, if you have one',
-      // },
-      // long_process: 'Connecting to {url} ... {seconds} seconds',
       status: {
         have_domains_without_token: 'Signup domains available without token',
         have_domains_with_token: 'Domains available with token',
@@ -79,23 +72,18 @@ export const en = {
       },
       create_user: {
         username_length_txt: 'Username should be 6 upto 60 characters long.',
-        username_chars_txt: 'Use latin letters, numbers and some characters: - (hyphen), . (dot) or _ (underscore).',
+        username_chars_txt:
+          'Use latin letters, numbers and some characters: - (hyphen), . (dot) or _ (underscore).',
         txt: 'Username should be 6 upto 60 characters. You can use letters, numbers and some characters: - (hyphen), . (dot) or _ (underscore). You can use characters from any language.',
         domain_label: 'Register to domain',
         status: {
           addr_not_available: 'Address {address} is not available.',
         },
       },
-      // user_domain: 'Register to Domain:',
       create_password: {
         pass_length_txt: 'Password should be at least 12 characters long.',
         pass_chars_txt: 'Use only latin letters, numbers and some characters: ',
         confirmation_txt: 'Passwords should match.',
-        // status: {
-        //   invalid_char: 'Character {char} is not allowed.',
-        //   password_too_short: 'Password is too short',
-        //   passwords_not_same: 'Passwords are not the same.',
-        // },
       },
       acknowledgments: {
         title: 'Important Acknowledgment',
@@ -122,23 +110,28 @@ export const en = {
       },
     },
     provider: {
+      stepTitle: 'Choose Your Identity',
       silver: {
         title: 'Silver',
-        info: '{domain} identity',
+        info: '{type} {domain}',
+        type: 'FREE',
       },
       gold: {
         title: 'Gold',
-        info: '{domain} identity',
+        info: '{type} {domain}',
+        type: 'PRO',
       },
       platinum: {
         title: 'Platinum',
-        info: '{domain} identity',
+        info: '{type} {domain}',
+        type: 'VIP',
       },
       custom_link: {
-        input_placeholder: 'Token or Sign Up Link',
-        footer_btn_part: 'Apply Token or Sign Up Link,',
-        footer_txt_part: 'if you have any',
+        input_placeholder: 'Token or Account Link',
+        account_help: 'Account Help',
       },
+      existing_signup_link: 'Already Signed Up?',
+      footer_info_link_txt: 'Host Your Own Domain',
     },
   },
 
@@ -154,7 +147,6 @@ export const en = {
   err: {
     domain_not_found: 'Domain {domain} is not found. Is it entered correctly?',
     domain_has_no_srv: 'Domain {domain} has no service. Is it entered correctly?',
-    // cant_connect_to_srv_on_domain: `Can't connect to service at {domain}`,
     incorrect_password: 'Incorrect password. Try again.',
     login_not_recognized: 'Login {login} is not recognized. Is it entered correctly?',
     incorrect_login: 'Incorrect login.',
@@ -165,8 +157,7 @@ export const en = {
     password_characters: 'The password contains prohibited characters. ',
     confirmation_err: 'Does not match the password entered.',
     singup_available_err: `Account wasn't created. Address {address} is no longer available. Try for another address`,
-    singup_general_err:
-      `Oops... We're so sorry, but something went wrong. Please close the app and try signup later.`,
+    singup_general_err: `Oops... We're so sorry, but something went wrong. Please close the app and try signup later.`,
     sign_in: 'SignIn error. Please try again later.',
     invalid_login: `The login must contain the {'@'} symbol. `,
   },

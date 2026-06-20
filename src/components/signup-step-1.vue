@@ -15,10 +15,10 @@
  this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-  import { inject, ref } from 'vue';
+  import { inject, onMounted, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { NOTIFICATIONS_KEY } from '@v1nt1248/3nclient-lib/plugins';
-  import { Ui3nButton, Ui3nInput, Ui3nRipple as vUi3nRipple } from '@v1nt1248/3nclient-lib';
+  import { Ui3nButton, Ui3nInput, Ui3nRipple as vUi3nRipple, Ui3nIcon } from '@v1nt1248/3nclient-lib';
   import { useSignupStore } from '@/stores/signup.store';
   import { stdSignupLink, tokens } from '@/constants';
   import { parse3NWebURL, type SignupParamsViaURL } from '@/utils/signup-links';
@@ -26,13 +26,14 @@
 
   const emits = defineEmits<{
     (event: 'change:step', payload: { step: number; query?: Record<string, string> }): void;
+    (event: 'change:step-title', payload: { title: string }): void;
   }>();
 
   const { t } = useI18n();
   const { $createNotice } = inject(NOTIFICATIONS_KEY)!;
   const { getDomainsFor, setStoreFieldValue } = useSignupStore();
 
-  const customLinkEntryOpened = ref(false)
+  // const customLinkEntryOpened = ref(false);
   const customTokenOrLink = ref('');
   const isProcessing = ref(false);
 
@@ -77,13 +78,24 @@
     }
   }
 
+  function openHostOwnBrowserPage() {
+    w3n.provider.openInExternal(`https://psafe.ly/app-host-dom`);
+  }
+
+  function openAccountHelpBrowserPage() {
+    w3n.provider.openInExternal(`https://psafe.ly/app-acc-help`);
+  }
+
+  onMounted(() => {
+    emits('change:step-title', { title: t(`signup.provider.stepTitle`) });
+  });
 </script>
 
 <template>
   <div :class="$style.step1">
-    <div :class="$style.row">
+    <div :class="$style.providers">
       <template
-        v-for="(token, key) in tokens"
+        v-for="({ domain, assetsImage }, key) in tokens"
         :key="key"
       >
         <div
@@ -91,41 +103,61 @@
           :class="[$style.provider, isProcessing && $style.disabled, $style[`${key}-provider`]]"
           @click="() => selectProvider(key)"
         >
-          <span :class="$style.providerTitle">{{ t(`signup.provider.${key}.title`) }}</span>
-          <span :class="$style.providerInfo">{{
-            t(`signup.provider.${key}.info`, { domain: `@${token.domain}` })
-          }}</span>
+          <img :src="assetsImage" />
+          <div>
+            <span :class="$style.providerTitle">{{ t(`signup.provider.${key}.title`) }}</span>
+            <br />
+            <span :class="$style.providerInfo">
+              <span :class="$style.providerType">{{ t(`signup.provider.${key}.type`) }}</span>
+              {{ t(`signup.provider.${key}.info`, { domain: `@${domain}` }) }}</span
+            >
+          </div>
         </div>
       </template>
     </div>
 
-    <startup-footer>
+    <div :class="$style.signUpLinkOrToken">
+      <div :class="$style.line">
+        <span :class="$style.textInLine">{{ t('signup.provider.existing_signup_link') }}</span>
+      </div>
 
-      <div
-        v-if="customLinkEntryOpened"
-        :class="$style.footerInput"
-      >
-
+      <div :class="$style.tokenSignUp">
         <ui3n-input
           v-model="customTokenOrLink"
           :disabled="isProcessing"
           :placeholder="t('signup.provider.custom_link.input_placeholder')"
-        />
-      </div>
-
-      <div
-        v-else
-        :class="$style.footer"
-      >
-        <ui3n-button
-          :type="'tertiary'"
-          @click="customLinkEntryOpened = true"
+          :class="$style.tokenInput"
         >
-          {{ t('signup.provider.custom_link.footer_btn_part') }}
-        </ui3n-button>
-        <span>{{ t('signup.provider.custom_link.footer_txt_part') }}</span>
+          <template #append-icon>
+            <ui3n-icon icon="link-variant" />
+          </template>
+        </ui3n-input>
       </div>
+      <div :class="$style.customLink">
+        <ui3n-button
+          type="tertiary"
+          @click="openAccountHelpBrowserPage"
+        >
+          {{ t('signup.provider.custom_link.account_help') }}
+        </ui3n-button>
+      </div>
+    </div>
 
+    <startup-footer>
+      <div :class="$style.footer">
+        <ui3n-icon
+          icon="round-language"
+          width="16"
+          height="16"
+          :class="$style.iconToken"
+        />
+        <ui3n-button
+          type="tertiary"
+          @click="openHostOwnBrowserPage"
+        >
+          {{ t('signup.provider.footer_info_link_txt') }}
+        </ui3n-button>
+      </div>
     </startup-footer>
   </div>
 </template>
@@ -135,84 +167,127 @@
     position: relative;
     width: 100%;
     height: 100%;
-    padding-top: var(--spacing-l);
   }
 
-  .row {
-    display: flex;
+  .providers {
     width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: var(--spacing-m);
     padding-left: var(--spacing-l);
     padding-right: var(--spacing-l);
+    margin-bottom: var(--spacing-xxl);
+
+    .provider {
+      margin-bottom: var(--spacing-m);
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-m);
+      border-radius: 12px;
+      border: 1.5px solid color-mix(in oklch, var(--default-fill-default), transparent 80%);
+      text-shadow: 0 1px 2px oklch(0% 0 0 / 0.4);
+      line-height: 1;
+      cursor: pointer;
+      transition: 0.3s ease;
+
+      img {
+        max-width: calc(var(--spacing-l) * 2);
+        margin-right: var(--spacing-s);
+      }
+
+      .providerTitle {
+        font-size: var(--font-24);
+        font-weight: 600;
+      }
+
+      .providerInfo {
+        font-size: var(--font-14);
+        font-weight: 400;
+      }
+
+      .providerType {
+        font-weight: bold;
+      }
+
+      &.silver-provider {
+        background: #14273f;
+        border: 1px solid #4ea2f5;
+
+        .providerType {
+          color: #4ea2f5;
+        }
+      }
+
+      &.gold-provider {
+        background: #5d3c04;
+        border: 1px solid #f0b121;
+
+        .providerType {
+          color: #f0b121;
+        }
+      }
+
+      &.platinum-provider {
+        background: #323d49;
+        border: 1px solid #9cb3c6;
+
+        .providerType {
+          color: #9cb3c6;
+        }
+      }
+
+      &:not(.disabled):hover {
+        border-color: var(--default-fill-default);
+        transition: 0.3s ease;
+        filter: brightness(1.1);
+      }
+
+      &.disabled {
+        pointer-events: none;
+        cursor: default;
+      }
+    }
   }
 
-  .provider {
-    position: relative;
-    width: 70%;
-    min-width: 12em;
-    aspect-ratio: 5 / 2.2;
-    padding: var(--spacing-xs);
-    overflow: hidden;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    row-gap: var(--spacing-s);
-    border: 1.5px solid color-mix(in oklch, var(--default-fill-default), transparent 80%);
-    // color: var(--white-100);
-    text-shadow: 0 1px 2px oklch(0% 0 0 / 0.4);
-    line-height: 1;
-    cursor: pointer;
-    transition: 0.3s ease;
+  .signUpLinkOrToken {
+    width: 100%;
+    padding-left: var(--spacing-m);
+    padding-right: var(--spacing-m);
 
-    .providerTitle {
-      font-size: var(--font-24);
-      font-weight: 600;
+    .line {
+      margin-bottom: calc(var(--spacing-m) * 0.75);
+      .textInLine {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: var(--signin-gray);
+        font-size: var(--font-12);
+        font-weight: 600;
+      }
+      .textInLine::before,
+      .textInLine::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--signin-gray);
+      }
+      .textInLine::before {
+        margin-right: var(--spacing-s);
+      }
+      .textInLine::after {
+        margin-left: var(--spacing-s);
+      }
     }
 
-    .providerInfo {
-      font-size: var(--font-14);
-      font-weight: 400;
+    .tokenSignUp {
+      display: flex;
+
+      .tokenInput {
+        padding: 0;
+      }
     }
 
-    &.silver-provider {
-      background: linear-gradient(135deg, oklch(78% 0.07 260) 0%, oklch(50% 0.06 260) 100%);
-      box-shadow:
-        0 0 6px oklch(65% 0.08 260 / 0.6),
-        0 0 12px oklch(65% 0.08 260 / 0.3),
-        inset 0 1px 1px oklch(100% 0 0 / 0.6);
-    }
-
-    &.gold-provider {
-      background: linear-gradient(135deg, oklch(82% 0.17 80) 0%, oklch(55% 0.16 80) 100%);
-      box-shadow:
-        0 0 6px oklch(70% 0.18 80 / 0.7),
-        0 0 12px oklch(70% 0.18 80 / 0.4),
-        inset 0 1px 1px oklch(100% 0 0 / 0.5);
-    }
-
-    &.platinum-provider {
-      background: linear-gradient(135deg, oklch(85% 0.02 250) 0%, oklch(60% 0.03 250) 100%);
-      box-shadow:
-        0 0 6px oklch(80% 0.03 250 / 0.8),
-        0 0 12px oklch(80% 0.03 250 / 0.4),
-        inset 0 1px 1px oklch(100% 0 0 / 0.8);
-      text-shadow: 0 1px 3px oklch(0% 0 0 / 0.5);
-    }
-
-    &:not(.disabled):hover {
-      border-color: var(--default-fill-default);
-      transition: 0.3s ease;
-      filter: brightness(1.1);
-    }
-
-    &.disabled {
-      pointer-events: none;
-      cursor: default;
+    .customLink {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+      margin-top: var(--spacing-s);
     }
   }
 
@@ -223,13 +298,9 @@
     padding-left: var(--spacing-m);
     padding-right: var(--spacing-m);
     text-align: center;
-  }
 
-  .footerInput {
-    width: 100%;
-    padding-left: var(--spacing-m);
-    padding-right: var(--spacing-m);
-    padding-top: var(--spacing-s);
+    .iconToken {
+      color: var(--color-text-control-primary-default) !important;
+    }
   }
-
 </style>

@@ -20,13 +20,14 @@
   import { useRouter } from 'vue-router';
   import { storeToRefs } from 'pinia';
   import { NOTIFICATIONS_KEY, type NotificationsPlugin } from '@v1nt1248/3nclient-lib/plugins';
-  import { Nullable, Ui3nButton, Ui3nInput, Ui3nRipple as vUi3nRipple } from '@v1nt1248/3nclient-lib';
+  import { Nullable, Ui3nButton, Ui3nInput, Ui3nRipple as vUi3nRipple, Ui3nSwitch } from '@v1nt1248/3nclient-lib';
   import { useLoggedInUserStore } from '@/stores/logged-in-user.store';
   import { APP_ROUTES } from '@/constants';
   import { areAddressesEqual, UserIdParseException } from '@/utils/canonical-address';
   import LoginSelector from '@/components/login-selector.vue';
   import prLogo from '@/assets/images/privacysafe-logo.svg';
   import StartupFooter from '@/components/startup-footer.vue';
+  import { useAutologinsStore } from '@/stores/autologin.store';
 
   const { t } = useI18n();
   const { $createNotice } = inject<NotificationsPlugin>(NOTIFICATIONS_KEY)!;
@@ -35,6 +36,12 @@
   const loggedInUserStore = useLoggedInUserStore();
   const { usersOnDisk } = storeToRefs(loggedInUserStore);
   const { setUserId } = loggedInUserStore;
+
+  const autologinStore = useAutologinsStore();
+  const { isAutologinAvailable } = autologinStore;
+  const { autoLoginEnabled } = storeToRefs(autologinStore);
+  // init value for signin flow
+  autoLoginEnabled.value = true;
 
   const form = ref({
     login: {
@@ -60,6 +67,8 @@
       !form.value.login.errorMessage &&
       !form.value.password.errorMessage,
   );
+
+  const userIsDoingLogin = computed(() => !!form.value.password.field);
 
   const loginValidationRules = [
     (v: string) => !!v || t('err.field_required'),
@@ -161,11 +170,14 @@
       signInProgress.value = null;
     }
   }
+
+  function openSupportUsBrowserPage() {
+    w3n.provider.openInExternal(`https://psafe.ly/app-donate`);
+  }
 </script>
 
 <template>
   <section :class="$style.signin">
-
     <div :class="$style.logoBlock">
       <img
         :src="prLogo"
@@ -174,7 +186,6 @@
     </div>
 
     <div :class="$style.inputBlock">
-
       <div :class="$style.row">
         <login-selector
           v-model="form.login.field"
@@ -202,6 +213,7 @@
           "
           :class="$style.password"
           @update:model-value="ev => onFieldUpdate(ev, 'password')"
+          @keyup.enter="signIn"
         />
 
         <ui3n-button
@@ -217,13 +229,27 @@
       </div>
     </div>
 
+    <div
+      :class="$style.row"
+      v-if="isAutologinAvailable && userIsDoingLogin"
+    >
+      <div :class="$style.autologin">
+        <ui3n-switch
+          v-model="autoLoginEnabled"
+          size="24"
+        />
+        <span>{{ t(autoLoginEnabled ? 'autologin.on' : 'autologin.off') }}</span>
+      </div>
+    </div>
+
     <div :class="$style.btnsBlock">
       <div :class="$style.row">
         <div
           :class="[
-            $style.bigBtnLayout, $style.siginInBtn,
-            (!!isFormValid && !signInProgress) ? $style.siginInBtnEnabled : ''
-            ]"
+            $style.bigBtnLayout,
+            $style.siginInBtn,
+            !!isFormValid && !signInProgress ? $style.siginInBtnEnabled : '',
+          ]"
           @click="signIn"
         >
           {{
@@ -232,23 +258,25 @@
         </div>
       </div>
 
-      <div :class="$style.textInLine">
-        <hr/>
-        <span>{{ t('signin.btn.or') }}</span>
-        <hr/>
+      <div
+        :class="$style.line"
+        v-if="!userIsDoingLogin"
+      >
+        <span :class="$style.textInLine">{{ t('signin.btn.or') }}</span>
       </div>
 
-      <div :class="$style.row">
-
+      <div
+        :class="$style.row"
+        v-if="!userIsDoingLogin"
+      >
         <div
           v-ui3n-ripple
-          :class="[ $style.bigBtnLayout, $style.createAccountBtn ]"
+          :class="[$style.bigBtnLayout, $style.createAccountBtn]"
           @click="createNewAccount"
         >
           {{ t('signin.btn.make_account') }}
         </div>
       </div>
-
     </div>
 
     <startup-footer>
@@ -257,12 +285,12 @@
         <span>{{ t('signin.footer.like_it') }}</span>
         <ui3n-button
           :type="'tertiary'"
+          @click="openSupportUsBrowserPage"
         >
           {{ t('signin.footer.support_us') }}
         </ui3n-button>
       </div>
     </startup-footer>
-
   </section>
 </template>
 
@@ -272,7 +300,7 @@
   .signin {
     position: relative;
     width: 100%;
-    min-height: calc(var(--spacing-xxl)*10);
+    min-height: calc(var(--spacing-xxl) * 10);
     padding-left: var(--spacing-ml);
     padding-right: var(--spacing-ml);
   }
@@ -309,6 +337,15 @@
       top: var(--spacing-xs);
       right: var(--spacing-xs);
       z-index: 1;
+    }
+
+    .autologin {
+      display: inline-flex;
+      align-items: center;
+
+      span {
+        margin-left: var(--spacing-m);
+      }
     }
   }
 
@@ -348,21 +385,28 @@
     }
   }
 
-  .textInLine {
-    width: 100%;
+  .line {
     margin-top: calc(var(--spacing-m) * 0.75);
     margin-bottom: calc(var(--spacing-m) * 0.75);
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    font-size: var(--font-10);
-    font-weight: 600;
-    color: var(--signin-gray);
-    hr {
-      display: inline-block;
-      width: calc(50% - 24px);
-      margin-left: 0;
-      margin-right: 0;
+    .textInLine {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      font-size: var(--font-10);
+      font-weight: 600;
+      color: var(--signin-gray);
+    }
+    .textInLine::before,
+    .textInLine::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--signin-gray);
+    }
+    .textInLine::before {
+      margin-right: var(--spacing-s);
+    }
+    .textInLine::after {
+      margin-left: var(--spacing-s);
     }
   }
 
@@ -377,5 +421,4 @@
       font-size: var(--font-24);
     }
   }
-
 </style>

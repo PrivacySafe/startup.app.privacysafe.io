@@ -49,10 +49,9 @@
     });
   }
 
-  function setStepTitleTxt(payload: { title: string; }) {
+  function setStepTitleTxt(payload: { title: string }) {
     stepTitleTxt.value = payload.title;
   }
-
 </script>
 
 <template>
@@ -78,6 +77,7 @@
         <signup-step1
           v-if="step === 1"
           @change:step="changeStep"
+          @change:step-title="setStepTitleTxt"
         />
 
         <signup-step2
@@ -119,8 +119,6 @@
       text-align: center;
       margin-block-start: 0;
       margin-block-end: var(--spacing-ml);
-
-      padding-left: var(--spacing-ml);
 
       .backBtn {
         position: absolute;

@@ -18,9 +18,11 @@
   import { computed, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { useSignupStore } from '@/stores/signup.store';
-  import { Ui3nButton, Ui3nInput } from '@v1nt1248/3nclient-lib';
-import { isStringOk } from '@/utils/validations';
-import { strictASCiiForPassword } from '@/utils/unicode-ranges';
+  import { Ui3nButton, Ui3nInput, Ui3nSwitch } from '@v1nt1248/3nclient-lib';
+  import { isStringOk } from '@/utils/validations';
+  import { strictASCiiForPassword } from '@/utils/unicode-ranges';
+import { useAutologinsStore } from '@/stores/autologin.store';
+import { storeToRefs } from 'pinia';
 
   const validPasswordSymbols = '! # * $ % & ( ) + - : ; ? . @ ^ _ ~ ';
 
@@ -32,6 +34,12 @@ import { strictASCiiForPassword } from '@/utils/unicode-ranges';
   const { t } = useI18n();
   const { setStoreFieldValue, address } = useSignupStore();
   emits('change:step-title', { title: address });
+
+  const autologinStore = useAutologinsStore();
+  const { isAutologinAvailable } = autologinStore;
+  const { autoLoginEnabled } = storeToRefs(autologinStore);
+  // init value for signup flow
+  autoLoginEnabled.value = true;
 
   const password = ref({
     txt: '',
@@ -95,6 +103,7 @@ import { strictASCiiForPassword } from '@/utils/unicode-ranges';
         type="password"
         :placeholder="t('placeholder.confirm_password')"
         :display-state-mode="isFormValid ? 'success' : undefined"
+        :class="$style.password"
       />
 
       <div :class="$style.text"
@@ -102,6 +111,17 @@ import { strictASCiiForPassword } from '@/utils/unicode-ranges';
       >
         <span>{{ t('signup.step.create_password.confirmation_txt') }}</span>
       </div>
+
+      <div :class="$style.autologin"
+        v-if="isAutologinAvailable && isFormValid"
+      >
+        <ui3n-switch
+          v-model="autoLoginEnabled"
+          size="24"
+        />
+        <span>{{ t(autoLoginEnabled ? 'autologin.on' : 'autologin.off') }}</span>
+      </div>
+
     </div>
 
     <ui3n-button
@@ -134,7 +154,6 @@ import { strictASCiiForPassword } from '@/utils/unicode-ranges';
     }
 
     .text {
-      display: inline-block;
       font-size: var(--font-14);
       font-weight: 400;
       line-height: 1.5;
@@ -142,6 +161,15 @@ import { strictASCiiForPassword } from '@/utils/unicode-ranges';
 
     .password {
       margin-bottom: var(--spacing-m);
+    }
+
+    .autologin {
+      display: inline-flex;
+      align-items: center;
+
+      span {
+        margin-left: var(--spacing-m);
+      }
     }
 
     .nextBtn {

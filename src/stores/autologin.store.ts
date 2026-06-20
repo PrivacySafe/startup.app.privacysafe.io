@@ -14,25 +14,17 @@
  You should have received a copy of the GNU General Public License along with
  this program. If not, see <http://www.gnu.org/licenses/>.
 */
+import { ref, watch } from 'vue';
+import { defineStore } from 'pinia';
 
-import silverImg from '@/assets/images/shield-silver.png';
-import goldImg from '@/assets/images/shield-gold.png';
-import platinumImg from '@/assets/images/shield-platinum.png';
+export const useAutologinsStore = defineStore('autologin', () => {
+	const isAutologinAvailable = !!w3n.enableAutoLogin;
+  const autoLoginEnabled = ref(false);
 
-export const tokens = {
-  silver: {
-    value: 'xzo6-aglb-qeuk-app-xyz',
-    domain: 'privacysafe.xyz',
-    assetsImage: silverImg
-  },
-  gold: {
-    value: 'yq4j-xtfa-d3af-app-me',
-    domain: 'privacysafe.me',
-    assetsImage: goldImg
-  },
-  platinum: {
-    value: 'f2ep-sjke-wbf8-app-gg',
-    domain: 'privacysafe.gg',
-    assetsImage: platinumImg
-  },
-};
+	watch(autoLoginEnabled, enable => w3n.enableAutoLogin?.(enable));
+
+	return {
+		isAutologinAvailable,
+		autoLoginEnabled
+	};
+});

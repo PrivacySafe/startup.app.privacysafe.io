@@ -36,7 +36,6 @@
 
 <template>
   <section :class="$style.app">
-
     <div :class="$style.body">
       <router-view v-slot="{ Component }">
         <transition>
@@ -45,14 +44,17 @@
       </router-view>
     </div>
   </section>
-
 </template>
 
 <style lang="scss" module>
   .app {
     position: fixed;
     inset: 0;
-    background-color: var(--color-bg-block-primary-default);
+
+    // pitch black background to match animation. Should it be for all, or only those steps?
+    background: #000;
+    // background-color: var(--color-bg-block-primary-default);
+
     color: var(--color-text-block-primary-default);
   }
 
@@ -62,5 +64,4 @@
     height: 100%;
     overflow: hidden auto;
   }
-
 </style>
