@@ -15,23 +15,47 @@
  this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 <script lang="ts" setup>
-  import { onBeforeMount } from 'vue';
-  import { useLoggedInUserStore } from '@/stores/logged-in-user.store';
-  import { useSignupStore } from '@/stores/signup.store';
-  import { useBootEventsStore } from '@/stores/boot-events.store';
+import { onBeforeMount } from 'vue';
+import { useLoggedInUserStore } from '@/stores/logged-in-user.store';
+import { useSignupStore } from '@/stores/signup.store';
+import { useBootEventsStore } from '@/stores/boot-events.store';
+import { signupParamsFromURL } from '@/routes';
+import { sleep } from '@v1nt1248/3nclient-lib/utils';
+import { useRouter } from 'vue-router';
+import { APP_ROUTES } from '@/constants';
+import { storeToRefs } from 'pinia';
 
-  const bootEventsStore = useBootEventsStore();
-  bootEventsStore.startWatchBoot();
+const router = useRouter();
 
-  const loggedInUserStore = useLoggedInUserStore();
+const bootEventsStore = useBootEventsStore();
+bootEventsStore.startWatchBoot();
 
-  const signupStore = useSignupStore();
-  const { initStandard } = signupStore;
+const loggedInUserStore = useLoggedInUserStore();
 
-  onBeforeMount(async () => {
-    await loggedInUserStore.loadUsersFromDisk();
-    await initStandard();
-  });
+const signupStore = useSignupStore();
+const { initStandard, checkSignupParamsAndSetDomains } = signupStore;
+const { availableDomains } = storeToRefs(signupStore);
+
+onBeforeMount(async () => {
+  await loggedInUserStore.loadUsersFromDisk();
+  await initStandard();
+
+  // push route and values with signup params from url, but only once, hence, calling here
+  if (signupParamsFromURL) {
+    sleep(10).then(async () => {
+      const haveSignupDomains = await checkSignupParamsAndSetDomains(signupParamsFromURL!);
+      if (haveSignupDomains) {
+        router.push({
+          name: APP_ROUTES.SIGNUP,
+          query: {
+            step: 2,
+            domain: availableDomains.value[0]
+          },
+        });
+      }
+    });
+  }
+});
 </script>
 
 <template>

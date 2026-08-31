@@ -28,6 +28,8 @@
   import prLogo from '@/assets/images/privacysafe-logo.svg';
   import StartupFooter from '@/components/startup-footer.vue';
   import { useAutologinsStore } from '@/stores/autologin.store';
+import { useSignupStore } from '@/stores/signup.store';
+import { parse3NWebURL } from '@/utils/signup-links';
 
   const { t } = useI18n();
   const { $createNotice } = inject<NotificationsPlugin>(NOTIFICATIONS_KEY)!;
@@ -42,6 +44,10 @@
   const { autoLoginEnabled } = storeToRefs(autologinStore);
   // init value for signin flow
   autoLoginEnabled.value = true;
+
+  const signupStore = useSignupStore();
+  const { checkSignupParamsAndSetDomains } = signupStore;
+  const { availableDomains } = storeToRefs(signupStore);
 
   const form = ref({
     login: {
@@ -171,6 +177,28 @@
     }
   }
 
+  const qrScanPossible = !!w3n.scanUrlQR;
+  async function scanStartupUrlFromQR() {
+    const scannedURL = await w3n.scanUrlQR!(['', '']);
+    if (!scannedURL) {
+      return;
+    }
+    const params = parse3NWebURL(scannedURL);
+    if (!params) {
+      return;
+    }
+    const haveSignupDomains = await checkSignupParamsAndSetDomains(params);
+    if (haveSignupDomains) {
+      router.push({
+        name: APP_ROUTES.SIGNUP,
+        query: {
+          step: 2,
+          domain: availableDomains.value[0]
+        },
+      });
+    }
+  }
+
   function openSupportUsBrowserPage() {
     w3n.provider.openInExternal(`https://psafe.ly/app-donate`);
   }
@@ -277,6 +305,19 @@
           {{ t('signin.btn.make_account') }}
         </div>
       </div>
+
+      <div
+        :class="$style.row"
+        v-if="qrScanPossible && !userIsDoingLogin"
+      >
+        <div
+          v-ui3n-ripple
+          :class="$style.scanBtn"
+          @click="scanStartupUrlFromQR"
+        >
+          {{ t('signin.btn.scan_qr') }}
+        </div>
+      </div>
     </div>
 
     <startup-footer>
@@ -368,6 +409,31 @@
   }
 
   .siginInBtnEnabled {
+    cursor: pointer;
+    &:hover {
+      filter: brightness(1.1);
+      transition: 0.3s ease;
+      background: var(--signin-green);
+    }
+  }
+
+  .scanBtn {
+    margin-top: calc(var(--spacing-m) * 1.5);
+
+    position: relative;
+    width: 100%;
+    height: var(--spacing-xxl);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--spacing-xxl);
+    font-size: var(--font-20);
+    font-weight: 500;
+
+    border-style: solid;
+    border-width: 2px;
+    border-color: var(--signin-green);
+
     cursor: pointer;
     &:hover {
       filter: brightness(1.1);

@@ -22,10 +22,8 @@ export const en = {
       login: 'Log In',
       entering: 'Entering ... {percent}%',
       make_account: 'Create Account',
+      scan_qr: 'Scan QR',
       or: 'OR',
-    },
-    make_account: {
-      txt: `Don't have an account? Create one!`,
     },
     footer: {
       like_it: 'Like what we do?',
@@ -41,8 +39,8 @@ export const en = {
   },
 
   autologin: {
-    on: 'Auto-Login ON',
-    off: 'Auto-Login OFF',
+    on: 'Auto Login ON',
+    off: 'Auto Login OFF',
   },
 
   signup: {

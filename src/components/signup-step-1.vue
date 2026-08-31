@@ -21,7 +21,7 @@
   import { Ui3nButton, Ui3nInput, Ui3nRipple as vUi3nRipple, Ui3nIcon } from '@v1nt1248/3nclient-lib';
   import { useSignupStore } from '@/stores/signup.store';
   import { stdSignupLink, tokens } from '@/constants';
-  import { parse3NWebURL, type SignupParamsViaURL } from '@/utils/signup-links';
+  import { parse3NWebURL } from '@/utils/signup-links';
   import StartupFooter from './startup-footer.vue';
 
   const emits = defineEmits<{
@@ -33,57 +33,77 @@
   const { $createNotice } = inject(NOTIFICATIONS_KEY)!;
   const { getDomainsFor, setStoreFieldValue } = useSignupStore();
 
-  // const customLinkEntryOpened = ref(false);
   const customTokenOrLink = ref('');
   const isProcessing = ref(false);
 
-  function getSignUpParams(token: string): SignupParamsViaURL | undefined {
-    return parse3NWebURL(`${stdSignupLink}${token}`);
-  }
+  // function getSignUpParams(token: string): SignupParamsViaURL | undefined {
+  //   return parse3NWebURL(`${stdSignupLink}${token}`);
+  // }
 
   async function selectProvider(key: 'silver' | 'gold' | 'platinum') {
     try {
       isProcessing.value = true;
       const selectedToken = tokens[key].value;
-      const params = getSignUpParams(selectedToken);
-
-      if (params) {
-        const { token, isStandardService } = params;
-        const { domains, errMsgLabel, okMsgLabel } = await getDomainsFor(params);
-
-        if (domains) {
-          setStoreFieldValue('signupLink', selectedToken);
-          setStoreFieldValue('isStandardService', !!isStandardService);
-          setStoreFieldValue('srvToken', token ?? '');
-          setStoreFieldValue('availableDomains', domains);
-          setStoreFieldValue('userDomain', tokens[key].domain);
-
-          emits('change:step', {
-            step: 2,
-            query: {
-              ...(token && { token }),
-              domain: tokens[key].domain,
-            },
-          });
-          return;
-        }
-
-        $createNotice({
-          type: 'error',
-          content: errMsgLabel!,
-        });
-      }
+      const signupLink = `${stdSignupLink}${selectedToken}`;
+      await checkSignupParamsAndSwitchIfServerGivesDomains(signupLink);
     } finally {
       isProcessing.value = false;
     }
   }
 
+  async function checkSignupParamsAndSwitchIfServerGivesDomains(signupLink: string, popErr = true) {
+    const params = parse3NWebURL(signupLink);
+    if (!params) {
+      return;
+    }
+
+    const { token, isStandardService } = params;
+    const { domains, errMsgLabel, okMsgLabel } = await getDomainsFor(params);
+
+    if (domains) {
+      const domainToChoose = domains[0];
+
+      setStoreFieldValue('signupLink', signupLink);
+      setStoreFieldValue('isStandardService', !!isStandardService);
+      setStoreFieldValue('srvToken', token ?? '');
+      setStoreFieldValue('availableDomains', domains);
+      setStoreFieldValue('userDomain', domainToChoose);
+
+      emits('change:step', {
+        step: 2,
+        query: {
+          ...(token && { token }),
+          domain: domainToChoose,
+        },
+      });
+      return;
+    }
+
+    if (popErr) {
+      $createNotice({
+        type: 'error',
+        content: errMsgLabel!,
+      });
+    }
+  }
+
   function openHostOwnBrowserPage() {
-    w3n.provider.openInExternal(`https://psafe.ly/app-host-dom`);
+    w3n.provider.openInExternal(`https://github.com/PrivacySafe/3nweb-service`);
+    // w3n.provider.openInExternal(`https://psafe.ly/app-host-dom`);
   }
 
   function openAccountHelpBrowserPage() {
-    w3n.provider.openInExternal(`https://psafe.ly/app-acc-help`);
+    w3n.provider.openInExternal(`https://psafe.ly/app-donate`);
+    // w3n.provider.openInExternal(`https://psafe.ly/app-acc-help`);
+  }
+
+  async function applyCustomLinkOrToken(linkOrToken: string) {
+    if (parse3NWebURL(linkOrToken)) {
+      await checkSignupParamsAndSwitchIfServerGivesDomains(linkOrToken, false);
+    } else {
+      const signupLink = `${stdSignupLink}${linkOrToken}`;
+      await checkSignupParamsAndSwitchIfServerGivesDomains(signupLink, false);
+    }
   }
 
   onMounted(() => {
@@ -127,6 +147,8 @@
           :disabled="isProcessing"
           :placeholder="t('signup.provider.custom_link.input_placeholder')"
           :class="$style.tokenInput"
+          @update:model-value="applyCustomLinkOrToken"
+          @keyup.enter="applyCustomLinkOrToken(customTokenOrLink)"
         >
           <template #append-icon>
             <ui3n-icon icon="link-variant" />

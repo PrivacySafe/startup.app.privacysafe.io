@@ -14,11 +14,12 @@
  You should have received a copy of the GNU General Public License along with
  this program. If not, see <http://www.gnu.org/licenses/>.
 */
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { APP_ROUTES } from '@/constants';
 import Signin from '@/pages/signin.vue';
 import Signup from '@/pages/signup.vue';
 import PostLoginSplashscreen from '@/pages/post-login-splashscreen.vue';
+import type { SignupParamsViaURL } from './utils/signup-links';
 
 const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/signin' },
@@ -28,7 +29,19 @@ const routes: RouteRecordRaw[] = [
   { path: '/:catchAll(.*)', redirect: '/signin' },
 ];
 
+// this is captured before router is created, and necessarily before it messes up location.hash
+export const signupParamsFromURL = (function() {
+  if (location.hash) {
+    try {
+      return JSON.parse(atob(location.hash.substring(1))) as SignupParamsViaURL;
+    } catch (err) {
+      console.error(`Attempt to parse signup params from initial load hash erred:`, err);
+    }
+  }
+  return undefined;
+})();
+
 export const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 });

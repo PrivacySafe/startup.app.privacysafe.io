@@ -34,6 +34,7 @@ declare namespace web3n.caps.startup {
 	interface W3N extends web3n.startup.W3N {
 		provider: DefaultProviderSite;
 		enableAutoLogin?: SetAutoLogin;
+		scanUrlQR?: (prefixies: string[]) => Promise<string|undefined>;
 	}
 
 	type SetAutoLogin = (enable: boolean) => Promise<void>;

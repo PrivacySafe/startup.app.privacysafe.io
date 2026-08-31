@@ -32,9 +32,10 @@ export function parse3NWebURL(urlStr: string): SignupParamsViaURL | undefined {
     return;
   }
   const token = urlStr.substring(indOfLastSlash + 1);
+  const signupUrl = new URL(`https://${urlStr.substring(customSignupLink.length, indOfLastSlash + 1)}`).href
   if (urlStr.startsWith(customSignupLink)) {
     return {
-      signupUrl: new URL(`https://${urlStr.substring(customSignupLink.length, indOfLastSlash + 1)}`).href,
+      signupUrl,
       token,
     };
   } else if (urlStr.startsWith(stdSignupLink)) {
