@@ -32,10 +32,9 @@
     v1: false,
     v2: false,
     v3: false,
-    v4: false,
   });
 
-  const isFormValid = computed(() => form.value.v1 && form.value.v2 && form.value.v3 && form.value.v4);
+  const isFormValid = computed(() => form.value.v1 && form.value.v2 && form.value.v3);
 </script>
 
 <template>
@@ -70,14 +69,6 @@
         </div>
       </div>
 
-      <div :class="$style.row"
-        v-if="form.v3"
-      >
-        <div :class="$style.item">
-          <ui3n-checkbox v-model="form.v4" />
-          <span :class="$style.itemText">{{ t('signup.step.acknowledgments.txt.check4.p1') }}</span>
-        </div>
-      </div>
     </div>
 
     <div :class="$style.createBtn"

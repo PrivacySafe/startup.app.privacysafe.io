@@ -22,16 +22,19 @@ import platinumImg from '@/assets/images/shield-platinum.png';
 export const tokens = {
   silver: {
     value: 'xzo6-aglb-qeuk-app-xyz',
+    url: '',
     domain: 'privacysafe.xyz',
     assetsImage: silverImg
   },
   gold: {
-    value: 'yq4j-xtfa-d3af-app-me',
+    value: '',
+    url: 'https://psafe.ly/psfgold',
     domain: 'privacysafe.me',
     assetsImage: goldImg
   },
   platinum: {
-    value: 'f2ep-sjke-wbf8-app-gg',
+    value: '',
+    url: 'https://psafe.ly/psfplat',
     domain: 'privacysafe.gg',
     assetsImage: platinumImg
   },

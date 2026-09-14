@@ -86,18 +86,15 @@ export const en = {
       acknowledgments: {
         title: 'Important Acknowledgment',
         txt: {
-          intro: 'Please read and acknowledge if you agree with followings:',
+          intro: 'Please acknowledge the following:',
           check1: {
             p1: 'I confirm that I am 18 years of age or older.',
           },
           check2: {
-            p1: 'I understand that it is impossible to recover lost password.',
+            p1: 'I understand that a lost password cannot be recovered.',
           },
           check3: {
-            p1: 'I will keep a secure copy of my password. For example, keep a non-digital copy, such as paper or etched metal, in a secure place.',
-          },
-          check4: {
-            p1: 'I understand it is good practice to store my credentials in a secure place or share them with a trustee.',
+            p1: 'I will keep a secure backup of my password, such as a physical copy in locked storage.',
           },
         },
         btn: 'Create Account',

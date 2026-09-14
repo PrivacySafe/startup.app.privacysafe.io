@@ -36,16 +36,17 @@
   const customTokenOrLink = ref('');
   const isProcessing = ref(false);
 
-  // function getSignUpParams(token: string): SignupParamsViaURL | undefined {
-  //   return parse3NWebURL(`${stdSignupLink}${token}`);
-  // }
-
   async function selectProvider(key: 'silver' | 'gold' | 'platinum') {
     try {
       isProcessing.value = true;
       const selectedToken = tokens[key].value;
-      const signupLink = `${stdSignupLink}${selectedToken}`;
-      await checkSignupParamsAndSwitchIfServerGivesDomains(signupLink);
+      if (selectedToken) {
+        const signupLink = `${stdSignupLink}${selectedToken}`;
+        await checkSignupParamsAndSwitchIfServerGivesDomains(signupLink);
+      } else {
+        const urlToGetToken = tokens[key].url;
+        await w3n.provider.openInExternal(urlToGetToken);
+      }
     } finally {
       isProcessing.value = false;
     }
