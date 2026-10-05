@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2025 3NSoft Inc.
+ Copyright (C) 2025 - 2026 3NSoft Inc.
 
  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -32,7 +32,10 @@ export function parse3NWebURL(urlStr: string): SignupParamsViaURL | undefined {
     return;
   }
   const token = urlStr.substring(indOfLastSlash + 1);
-  const signupUrl = new URL(`https://${urlStr.substring(customSignupLink.length, indOfLastSlash + 1)}`).href
+  let signupUrl = new URL(`https://${urlStr.substring(customSignupLink.length, indOfLastSlash + 1)}`).href
+  if ((new URL(signupUrl)).hostname.endsWith('.onion')) {
+    signupUrl = `http${signupUrl.substring(5)}`;
+  }
   if (urlStr.startsWith(customSignupLink)) {
     return {
       signupUrl,
